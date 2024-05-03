@@ -152,7 +152,7 @@ body{
 .btn-restart{
     position: absolute;
     top: 50px;
-    right: 230px;
+    right: 153px;
 }
 
 @keyframes animarDino{
@@ -292,8 +292,9 @@ function Update() {
 }
 
 function HandleKeyDown(ev){
-    
-        Saltar();
+    playAudio()
+         Saltar();
+         
     
 }
 
@@ -439,6 +440,7 @@ function GanarPuntos() {
 
 function GameOver() {
     Estrellarse();
+    pauseAudio()
     gameOver.style.display = "block";
     
 }
@@ -451,7 +453,7 @@ function DetectarColision() {
         }else{
             if(IsCollision(dino, obstaculos[i], 10, 30, 15, 20)) {
                 GameOver();
-                pauseAudio()
+                
             }
         }
     }
