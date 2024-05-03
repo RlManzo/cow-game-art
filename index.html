@@ -152,7 +152,7 @@ body{
 .btn-restart{
     position: absolute;
     top: 50px;
-    right: 635px;
+    right: 230px;
 }
 
 @keyframes animarDino{
@@ -218,7 +218,7 @@ function Loop() {
 
 function reloadPage() {
       location.reload();
-      playAudio()
+      
     }
 
 //****** GAME LOGIC ********//
@@ -274,6 +274,7 @@ function Start() {
     textoScore = document.querySelector(".score");
     dino = document.querySelector(".dino");
     document.addEventListener("touchstart", HandleKeyDown);
+    playAudio()
 }
 
 function Update() {
