@@ -30,8 +30,8 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 .mediodia{ background-color:#ffdcf3 }
 .tarde   { background-color:#ffadad }
 .noche   { background-color:#aca8c7 }
-.level-2{ background:#000 !important; }
-.level-3{ background:#000 !important; }
+.level-2{ background:#000 !important; }  /* oscuro */
+.level-3{ background:#000 !important; }  /* tormenta */
 
 /* ===== HUD ===== */
 .score{
@@ -75,12 +75,12 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 
 /* ===== UFO NIVEL 2 ===== */
 #ufoLayer{
-  position:absolute; inset:0; pointer-events:none; display:none; z-index:1;
+  position:absolute; inset:0; pointer-events:none; display:none; z-index:1; /* sobre nubes, bajo cactus/dino */
 }
 .level-2 #ufoLayer{ display:block; }
 #ufoLayer img{
   position:absolute;
-  width:140px;
+  width:130px;                   /* tamaño pequeño */
   top:22px;
   left:-220px;
   animation: ufoMove 12s linear infinite, ufoBob 1.8s ease-in-out infinite;
@@ -164,7 +164,7 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
   text-shadow:0 2px 0 #000, 0 0 10px rgba(255,59,59,.45);
 }
 
-/* WIN (texto amarillo — se usa y se actualiza dinámicamente) */
+/* WIN (texto amarillo) */
 .win-msg{
   color:#ffe46b;
   font-size:20px;
@@ -261,8 +261,8 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
     <!-- WIN (in-game) -->
     <div class="overlay--ingame" id="winOverlay">
       <div class="life-lost-wrap">
-        <div class="win-msg" id="winMsg">¡GANASTE!</div>
-        <button class="retro-btn green" id="backToStartWin" style="display:none">REINICIAR</button>
+        <div class="win-msg">¡GANASTE!</div>
+        <button class="retro-btn green" id="backToStartWin">VOLVER AL INICIO</button>
       </div>
     </div>
 
@@ -324,12 +324,8 @@ let lives=MAX_LIVES;
 let level=1;                 // 1,2,3
 let levelSpeedFactor=1;
 
-/* NUEVO: flags para victoria / spawn */
-let spawningEnabled = true;
-let gameWon = false;
-
 let contenedor,dino,textoScore,suelo,startOverlay,lifeLostOverlay,gameOverOverlay,winOverlay,livesHud;
-let levelOverlay,levelLabel, rainLayer, lightningLayer, winMsg, backToStartWinBtn;
+let levelOverlay,levelLabel, rainLayer, lightningLayer;
 
 /* ===== AUDIO ===== */
 let audioCtx=null, hitBuffer=null, sfxPrimed=false;
@@ -343,6 +339,7 @@ const hitEl= ()=>document.getElementById("hit-sfx");
 function playBGM(n, reset=false){
   const target = bgmEls[n] && bgmEls[n]();
   if(!target) return;
+  // pausar otras
   [1,2,3].forEach(k => { const a=bgmEls[k](); if(a && a!==target) a.pause(); });
   if(reset) try{ target.currentTime = 0; }catch(e){}
   target.play().catch(()=>{});
@@ -370,14 +367,12 @@ function init(){
   livesHud=document.getElementById("lives");
   rainLayer=document.getElementById("rainLayer");
   lightningLayer=document.getElementById("lightningLayer");
-  winMsg=document.getElementById("winMsg");
-  backToStartWinBtn=document.getElementById("backToStartWin");
 
   document.querySelectorAll(".char").forEach(c=>c.addEventListener("click",()=>startGame(c.getAttribute("data-animal"))));
   document.getElementById("startDefault").addEventListener("click",()=>startGame('cow'));
   document.getElementById("retryBtn").addEventListener("click",resumeAfterDeath);
   document.getElementById("backToStart").addEventListener("click",backToStart);
-  backToStartWinBtn.addEventListener("click",backToStart);
+  document.getElementById("backToStartWin").addEventListener("click",backToStart);
 
   contenedor.addEventListener("touchstart", onPress, {passive:true});
   contenedor.addEventListener("mousedown", onPress);
@@ -428,9 +423,13 @@ function primeAudioOnce(){
   if(sfxPrimed) return;
   sfxPrimed = true;
   try{ ensureAudioCtx().resume(); }catch(e){}
+  // Desbloquear TODAS las bgm y el SFX
   [bgmEls[1](), bgmEls[2](), bgmEls[3](), hitEl()].forEach(a=>{
     if(!a) return;
-    try{ a.muted=true; a.play().then(()=>{a.pause();a.currentTime=0;a.muted=false;}).catch(()=>{});}catch(e){}
+    try{
+      a.muted=true;
+      a.play().then(()=>{ a.pause(); a.currentTime=0; a.muted=false; }).catch(()=>{});
+    }catch(e){}
   });
 }
 
@@ -442,13 +441,10 @@ function startGame(animal='cow'){
   contenedor.classList.remove('level-2','level-3','mediodia','tarde','noche');
   stopStorm();
   resetAll(true);
-  spawningEnabled = true;
-  gameWon = false;
-  hideWinOverlay();
   applyCharacter();
   hideStart();
   showLevelBanner('NIVEL 1');
-  playBGM(1, true);
+  playBGM(1, /*reset*/true);
 }
 
 function backToStart(){
@@ -461,7 +457,7 @@ function showStart(){
   startOverlay.classList.add("show");
   lifeLostOverlay.classList.remove("show");
   gameOverOverlay.classList.remove("show");
-  hideWinOverlay();
+  winOverlay.classList.remove("show");
   levelOverlay.classList.remove("show");
   stopStorm();
 }
@@ -487,23 +483,21 @@ function applyCharacter(){
 
 /* ===== UPDATE ===== */
 function Update(){
-  // OJO: winOverlay NO pausa el juego
-  if(parado || startOverlay.classList.contains("show") || lifeLostOverlay.classList.contains("show") || gameOverOverlay.classList.contains("show") || levelOverlay.classList.contains("show")) return;
+  if(parado || startOverlay.classList.contains("show") || lifeLostOverlay.classList.contains("show") || gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show") || levelOverlay.classList.contains("show")) return;
 
   moverDinosaurio();
   moverSuelo();
-  if(spawningEnabled){
-    decidirCrearObstaculos();
-  }
+  decidirCrearObstaculos();
   decidirCrearNubes();
   moverObstaculos();
   moverNubes();
-  if(!gameWon){ detectarColision(); }
+  detectarColision();
   velY -= gravedad * deltaTime;
 
+  // Cambios de nivel con score NO acumulable
   if(level===1 && score>=70){ toLevel2(); }
   else if(level===2 && score>=110){ toLevel3(); }
-  else if(level===3 && score>=150 && !gameWon){ onWin(); }
+  else if(level===3 && score>=150){ onWin(); }
 }
 
 /* ===== INPUT ===== */
@@ -511,9 +505,10 @@ function onPress(){
   primeAudioOnce();
   if(startOverlay.classList.contains("show")) return;
   if(lifeLostOverlay.classList.contains("show")){ resumeAfterDeath(); return; }
-  if(gameOverOverlay.classList.contains("show")){ backToStart(); return; }
+  if(gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show")){ backToStart(); return; }
   if(levelOverlay.classList.contains("show")) return;
-  playBGM(level, false);
+  // continuar música del nivel actual
+  playBGM(level, /*reset*/false);
   saltar();
 }
 function onKeyDown(e){
@@ -634,31 +629,19 @@ function resumeAfterDeath(){
   dino.classList.remove("dino-estrellado");
   dino.classList.add("dino-corriendo");
   dinoPosY=sueloY; velY=0; parado=false;
-  playBGM(level, false);
+  playBGM(level, /*reset*/false);
 }
 function showGameOver(){ gameOverOverlay.classList.add("show"); stopAllBGM(); }
+function onWin(){ winOverlay.classList.add('show'); parado=true; stopAllBGM(); }
 
-/* ===== VICTORIA ===== */
-function onWin(){
-  gameWon = true;
-  spawningEnabled = false;              // no más obstáculos
-  obstaculos.forEach(o=>o.remove()); obstaculos=[];  // limpiar los que haya
-  gameVel = 1;                          // ritmo inicial
-  // mensaje 1
-  winMsg.textContent = '¡GANASTE! Lograste salvar al animal';
-  backToStartWinBtn.style.display = 'none';
-  winOverlay.classList.add('show');     // se muestra pero NO pausa el juego (ver Update)
-  // a los 15s mostramos créditos + botón
-  setTimeout(()=>{
-    winMsg.textContent = 'Idea general y desarrollo: Ricardo Manzo para la "ZONA ANIMAL"';
-    backToStartWinBtn.style.display = 'inline-block';
-  }, 15000);
-}
-function hideWinOverlay(){
-  winOverlay.classList.remove('show');
-  backToStartWinBtn.style.display = 'none';
-  winMsg.textContent = '¡GANASTE!';
-  gameWon = false;
+function renderLives(){
+  livesHud.innerHTML="";
+  const frames=['heart-1','heart-2','heart-3'];
+  for(let i=0;i<MAX_LIVES;i++){
+    const span=document.createElement('span');
+    span.className='life '+frames[i]+(i<lives?'':' lost');
+    livesHud.appendChild(span);
+  }
 }
 
 /* ===== NIVELES ===== */
@@ -672,31 +655,33 @@ function showLevelBanner(text){
     parado = prevParado;
   }, 1300);
 }
+
 function toLevel2(){
   level=2;
   levelSpeedFactor = 1.6;
   contenedor.classList.add('level-2');
-  contenedor.classList.remove('level-3','mediodia','tarde','noche');
+  contenedor.classList.remove('mediodia','tarde','noche');
   stopStorm();
   resetAll(false);
-  spawningEnabled = true; gameWon = false;
   score = 0; textoScore.textContent = "000";
   gameVel = 1.8 * levelSpeedFactor;
   showLevelBanner('NIVEL 2');
-  playBGM(2, true);
+  playBGM(2, /*reset*/true);
 }
+
 function toLevel3(){
-  level=3;
+  level = 3;
   levelSpeedFactor = 2.0;
+
   contenedor.classList.add('level-3');
-  contenedor.classList.remove('level-2'); // oculta UFO
+  contenedor.classList.remove('level-2');  
+  
   startStorm();
   resetAll(false);
-  spawningEnabled = true; gameWon = false;
   score = 0; textoScore.textContent = "000";
   gameVel = 2.2 * levelSpeedFactor;
   showLevelBanner('NIVEL 3');
-  playBGM(3, true);
+  playBGM(3, /*reset*/true);
 }
 
 /* ===== TORMENTA (LLUVIA + RELÁMPAGOS) ===== */
