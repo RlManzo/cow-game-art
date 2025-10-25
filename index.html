@@ -1,500 +1,750 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COW GAME</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAVE THE COW</title>
 
-* {
-    padding: 0;
-    margin: 0;
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <style>
+:root{
+  --accent:#ffd66b;
+  --panel:#121212;
+  --heart-img:url('img/corazones.png');
 }
 
-body{
-    height: 100vh;
-    background: #584040;
-    display: flex;
-    align-items: center;
+*{margin:0;padding:0;box-sizing:border-box}
+body{height:100vh;background:#584040;display:flex;align-items:center;justify-content:center}
+
+/* ===== CAMPO DE JUEGO ===== */
+.contenedor{
+  width:920px;height:280px;position:relative;overflow:hidden;border-radius:12px;
+  background:linear-gradient(#b7d6c7,transparent) #ffe2d1;
+  transition:background-color 1s linear, background 1s linear;
+  box-shadow:0 20px 40px rgba(0,0,0,.35);
+  image-rendering:pixelated;
 }
+.mediodia{ background-color:#ffdcf3 }
+.tarde   { background-color:#ffadad }
+.noche   { background-color:#aca8c7 }
+.level-2{ background:#000 !important; }
+.level-3{ background:#000 !important; }
 
-.contenedor {
-    width: 920px;
-    height: 280px;
-    margin: 0 auto;
-    
-    position: relative;
-
-    background: linear-gradient(#b7d6c7, transparent) #ffe2d1;/*linear-gradient(#90ebff, white);*/
-    transition: background-color 1s linear;
-    overflow: hidden;
-}
-
-.mediodia {
-    background-color: #ffdcf3;
-}
-
-.tarde {
-    background-color: #ffadad;
-}
-
-.noche {
-    background-color: #aca8c7;
-}
-
-.dino {
-    width: 79px;
-    height: 84px;
-
-    position: absolute;
-    bottom: 22px;
-    left: 42px;
-    z-index: 2;
-
-    background: url(img/cow-test2.png) repeat-x 0px 0px;
-    background-size: 336px 90px;
-    background-position-x: 0px;
-
-}
-
-.dino-corriendo {
-    animation: animarDino 0.25s steps(2) infinite;
-}
-.dino-estrellado {
-    background-position-x: -252px;
-}
-
-.suelo {
-    width: 200%;
-    height: 42px;
-
-    position: absolute;
-    bottom: 0;
-    left: 0;
-
-    background: url(img/suelo.png) repeat-x 0px 0px;
-    background-size: 50% 42px;
-
-}
-
-.cactus{
-    width: 46px;
-    height: 81px;
-
-    position: absolute;
-    bottom: 16px;
-    left: 600px;
-    z-index: 1;
-
-    background: url(img/hacha.png) no-repeat;
-}
-.cactus2{
-    width: 98px;
-    height: 66px;
-
-    background: url(img/hacha1.png) no-repeat;
-}
-
-.nube{
-    width: 92px;
-    height: 26px;
-
-    position: absolute;
-    z-index: 0;
-
-    background: url(img/nube.png) no-repeat;
-    background-size: 92px 26px;
-}
-
-.nave{
-    width: 26px;
-    height: 96px;
-
-    position: absolute;
-    z-index: 0;
-
-    background: url(img/nave.png) no-repeat;
-    background-size: 92px 26px;
-}
-
+/* ===== HUD ===== */
 .score{
-    width: 100px;
-    height: 30px;
-
-    position: absolute;
-    top: 5px;
-    right: 15px;
-    z-index: 10;
-
-    color: #d48871;
-    font-family: Verdana;
-    font-size: 30px;
-    font-weight: bold;
-    text-align: right;
+  position:absolute;top:10px;right:14px;z-index:20;
+  color:#d48871;font:700 18px 'Press Start 2P',monospace;
 }
-
-.game-over{
-    display: none;
-
-    position: absolute;
-    width: 100%;
-
-
-    text-align: center;
-    color: #7e928b;
-    font-size: 30px;
-    font-family: Verdana;
-    font-weight: 700;
+.lives{
+  position:absolute;top:10px;left:12px;height:28px;display:flex;gap:6px;z-index:20
 }
+.life{
+  width:28px;height:28px;background-image:var(--heart-img);background-repeat:no-repeat;background-size:300% 100%;
+  opacity:1;transition:opacity .15s ease, transform .15s ease;
+}
+.life.lost{ opacity:0; transform:scale(.9) }
+.heart-1{ background-position:0% 0 }
+.heart-2{ background-position:50% 0 }
+.heart-3{ background-position:100% 0 }
 
-.btn-restart{
-    position: relative;
-    top: 32px;
-    right: 251px;
+/* ===== MUNDO ===== */
+.suelo{
+  width:200%;height:42px;position:absolute;bottom:0;left:0;
+  background:url('img/suelo.png') repeat-x 0 0;background-size:50% 42px;
 }
-
-@media (max-width: 500px) {
-    .btn-restart{
-    position: relative;
-    top: -8px;
-    right: 0px;
+.dino{
+  width:79px;height:84px;position:absolute;bottom:22px;left:42px;z-index:3;
+  background-size:336px 90px;background-position-x:0;
 }
-}
+.dino.cow     { background-image:url('img/cow-test2.png') }
+.dino.chicken { background-image:url('img/chicken-test1.png') }
+.dino-corriendo{ animation:animarDino .25s steps(2) infinite }
+.dino-estrellado{ background-position-x:-252px }
 
 @keyframes animarDino{
-    from{
-        background-position-x: -84px;
-    }
-    to{
-        background-position-x: -252px;
-    }
+  from{ background-position-x:-84px }
+  to  { background-position-x:-252px }
 }
 
+.cactus{ width:46px;height:81px;position:absolute;bottom:16px;left:600px;z-index:2;background:url('img/hacha.png') no-repeat }
+.cactus2{ width:98px;height:66px;background:url('img/hacha1.png') no-repeat }
+.nube{ width:92px;height:26px;position:absolute;z-index:0;background:url('img/nube.png') no-repeat;background-size:92px 26px }
 
-    </style>
+/* ===== UFO NIVEL 2 ===== */
+#ufoLayer{
+  position:absolute; inset:0; pointer-events:none; display:none; z-index:1;
+}
+.level-2 #ufoLayer{ display:block; }
+#ufoLayer img{
+  position:absolute;
+  width:140px;
+  top:22px;
+  left:-220px;
+  animation: ufoMove 12s linear infinite, ufoBob 1.8s ease-in-out infinite;
+  image-rendering:pixelated;
+  opacity:0.95;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.35));
+}
+@keyframes ufoMove{
+  0%   { transform: translateX(-220px); }
+  50%  { transform: translateX(980px); }
+  100% { transform: translateX(-220px); }
+}
+@keyframes ufoBob{
+  0%,100%{ top:22px; }
+  50%    { top:28px; }
+}
+
+/* ===== OVERLAY PORTADA (FULL) ===== */
+.overlay{
+  position:fixed;inset:0;width:100vw;height:100dvh;z-index:999;
+  display:none;align-items:center;justify-content:center;background:#0b0b0d;
+}
+.overlay.show{ display:flex }
+.overlay::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 2px, transparent 2px, transparent 4px);
+}
+
+/* panel portada */
+.panel{
+  position:relative;z-index:2;width:92%;max-width:780px;padding:22px;text-align:center;
+  color:#eaeaea;background:var(--panel);
+  border:4px solid #fff;outline:4px solid #000;box-shadow:inset 0 0 0 4px #444,0 12px 0 #000;
+  border-radius:8px;font-family:'Press Start 2P',monospace;
+}
+.title-xxl{ font-size:26px;color:var(--accent);text-shadow:0 3px 0 #000;margin-bottom:10px }
+.sub{ font-size:12px;color:#cacaca;line-height:1.6;margin-bottom:14px }
+
+.start-grid{ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0 }
+.char{
+  display:flex;align-items:center;gap:12px;padding:12px;background:#1f1f1f;border:3px solid #555;border-radius:8px;cursor:pointer;
+  transition:transform .08s ease,border-color .08s ease;
+}
+.char:hover{ transform:translateY(-2px);border-color:#9ad3ff }
+.char-swatch{ width:84px;height:90px;background-size:336px 90px;background-position-x:-84px }
+.swatch-cow{ background-image:url('img/cow-test2.png') }
+.swatch-chicken{ background-image:url('img/chicken-test1.png') }
+.char-name{ font-size:14px;color:#fff }
+.char-desc{ font-size:10px;color:#a8a8a8;margin-top:6px;text-align:left }
+
+.retro-btn{
+  display:inline-block;padding:12px 18px;background:#2b2b2b;color:#fff;border:3px solid #fff;outline:3px solid #000;border-radius:8px;
+  box-shadow:0 6px 0 #000;text-decoration:none;font-family:'Press Start 2P',monospace;font-size:12px;
+}
+.retro-btn:hover{ transform:translateY(-1px) }
+.retro-btn:active{ transform:translateY(2px);box-shadow:0 2px 0 #000 }
+
+/* ===== OVERLAYS IN-GAME ===== */
+.overlay--ingame{
+  position:absolute;inset:0;z-index:80;
+  display:none;align-items:center;justify-content:center;
+  background:transparent;pointer-events:none;
+}
+.overlay--ingame.show{ display:flex }
+.life-lost-wrap{ text-align:center; pointer-events:auto; font-family:'Press Start 2P', monospace; }
+.life-lost-msg{
+  color:#fff; font-size:18px; margin-bottom:12px;
+  text-shadow:0 2px 0 #000, 0 0 8px rgba(0,0,0,.35);
+}
+.retro-btn.green{
+  background:#1d7e48; border:3px solid #e7ffe7; outline:3px solid #0e3b24; color:#fff; box-shadow:0 6px 0 #0e3b24;
+}
+.retro-btn.green:hover{ transform:translateY(-1px) }
+.retro-btn.green:active{ transform:translateY(2px); box-shadow:0 2px 0 #0e3b24 }
+
+/* GAME OVER texto rojo */
+.go-msg{
+  color:#ff3b3b;
+  font-size:20px;
+  margin-bottom:12px;
+  text-shadow:0 2px 0 #000, 0 0 10px rgba(255,59,59,.45);
+}
+
+/* WIN (texto amarillo — se usa y se actualiza dinámicamente) */
+.win-msg{
+  color:#ffe46b;
+  font-size:20px;
+  margin-bottom:12px;
+  text-shadow:0 2px 0 #000, 0 0 10px rgba(255,228,107,.45);
+}
+
+/* Banner de nivel */
+.level-overlay{
+  position:absolute;inset:0;z-index:70;display:none;align-items:center;justify-content:center;
+  background:transparent; pointer-events:none;
+}
+.level-overlay.show{ display:flex }
+.level-label{
+  font-family:'Press Start 2P', monospace; font-size:18px; color:#fff;
+  text-shadow:0 2px 0 #000, 0 0 8px rgba(0,0,0,.4);
+}
+
+/* ===== TORMENTA NIVEL 3 ===== */
+#rainLayer, #lightningLayer{
+  position:absolute;inset:0;pointer-events:none;z-index:5;
+  display:none;
+}
+.level-3 #rainLayer,
+.level-3 #lightningLayer{ display:block; }
+
+.drop{
+  position:absolute;top:-20px;width:2px;height:14px;background:rgba(180,200,255,.8);
+  filter:blur(.2px);
+  animation:fall linear infinite;
+}
+@keyframes fall{ to{ transform:translateY(320px); } }
+
+.flash{
+  position:absolute;inset:0;background:linear-gradient(#fff,rgba(255,255,255,.6) 40%, rgba(255,255,255,0) 60%);
+  opacity:0; animation:flash 300ms ease-out; mix-blend-mode:screen;
+}
+@keyframes flash{
+  0%{ opacity:.0 } 10%{ opacity:.9 } 40%{ opacity:.25 } 100%{ opacity:0 }
+}
+  </style>
 </head>
 <body>
 
-    <audio id="background-music" autoplay loop>
-        <source src="./music/mato.mp3" type="audio/mpeg">
-        Tu navegador no soporta la etiqueta de audio.
-      </audio>
-    
+  <!-- MÚSICA (una por nivel, todas precargadas) -->
+  <audio id="bgm-level1" preload="auto" loop>
+    <source src="./music/fondoMusic.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="bgm-level2" preload="auto" loop>
+    <source src="./music/level2.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="bgm-level3" preload="auto" loop>
+    <source src="./music/level3.mp3" type="audio/mpeg">
+  </audio>
 
-    <div class="contenedor">
+  <!-- SFX de colisión -->
+  <audio id="hit-sfx" preload="auto" playsinline>
+    <source src="./music/estrellar.mp3" type="audio/mpeg">
+  </audio>
 
-        <div class="suelo"></div>
-        
-        <div class="dino dino-corriendo"></div>
+  <!-- Juego -->
+  <div class="contenedor" id="game">
+    <div class="lives" id="lives"></div>
+    <div class="score" id="score">000</div>
 
-        <div class="score">0</div>
+    <div class="suelo"></div>
+    <div class="dino cow dino-corriendo" id="player"></div>
 
+    <!-- UFO (solo NIVEL 2) -->
+    <div id="ufoLayer">
+      <img src="img/ufo2.gif" alt="UFO">
     </div>
 
-    <div class="game-over">¡NO PUDISTE SALVARLA!
-        <button onclick="reloadPage()" class="btn btn-success btn-restart">Restart</button>
+    <!-- Capa de lluvia y relámpagos -->
+    <div id="rainLayer"></div>
+    <div id="lightningLayer"></div>
+
+    <!-- VIDA PERDIDA -->
+    <div class="overlay--ingame" id="lifeLostOverlay">
+      <div class="life-lost-wrap">
+        <div class="life-lost-msg">¡NO PUDISTE SALVARLA!</div>
+        <button class="retro-btn green" id="retryBtn">REINTENTAR</button>
+      </div>
     </div>
-    
+
+    <!-- GAME OVER (in-game) -->
+    <div class="overlay--ingame" id="gameOverOverlay">
+      <div class="life-lost-wrap">
+        <div class="go-msg">GAME OVER</div>
+        <button class="retro-btn green" id="backToStart">VOLVER AL INICIO</button>
+      </div>
+    </div>
+
+    <!-- WIN (in-game) -->
+    <div class="overlay--ingame" id="winOverlay">
+      <div class="life-lost-wrap">
+        <div class="win-msg" id="winMsg">¡GANASTE!</div>
+        <button class="retro-btn green" id="backToStartWin" style="display:none">REINICIAR</button>
+      </div>
+    </div>
+
+    <!-- Banner de nivel -->
+    <div class="level-overlay" id="levelOverlay">
+      <div class="level-label" id="levelLabel">NIVEL 1</div>
+    </div>
+  </div>
+
+  <!-- Portada -->
+  <div class="overlay show" id="startOverlay" aria-hidden="false">
+    <div class="panel">
+      <div class="title-xxl">SAVE THE COW</div>
+      <div class="sub">Elegí tu personaje. Saltá con <b>clic</b>, <b>toque</b>, <b>Espacio</b> o <b>↑</b>. Tenés <b>3 vidas</b>.</div>
+      <div class="start-grid">
+        <div class="char" data-animal="cow">
+          <div class="char-swatch swatch-cow"></div>
+          <div>
+            <div class="char-name">VACA</div>
+            <div class="char-desc">Sprite original, paso firme 🐄</div>
+          </div>
+        </div>
+        <div class="char" data-animal="chicken">
+          <div class="char-swatch swatch-chicken"></div>
+          <div>
+            <div class="char-name">GALLINA</div>
+            <div class="char-desc">Ligera y saltarina 🐔</div>
+          </div>
+        </div>
+      </div>
+      <a class="retro-btn" id="startDefault">START (VACA)</a>
+    </div>
+  </div>
 
 <script>
+/* ===== STATE / CONST ===== */
+let time=new Date(), deltaTime=0;
 
-//****** GAME LOOP ********//
+const sueloY=22, impulso=900, gravedad=2500;
+let velY=0, dinoPosY=sueloY;
 
-var time = new Date();
-var deltaTime = 0;
+const dinoPosX=42;
+let sueloX=0, gameVel=1, score=0;
+const velEscenarioBase=1280/3;
 
-if(document.readyState === "complete" || document.readyState === "interactive"){
-    setTimeout(Init, 1);
-}else{
-    document.addEventListener("DOMContentLoaded", Init); 
+let parado=false, saltando=false, selectedAnimal='cow';
+
+let tiempoHastaObstaculo=2;
+const tiempoObstaculoMin=0.7, tiempoObstaculoMax=1.8;
+let obstaculos=[];
+
+let tiempoHastaNube=0.5, tiempoNubeVar=0.5;
+const tiempoNubeMin=0.7, tiempoNubeMax=2.7, maxNubeY=270, minNubeY=100;
+let nubes=[], velNube=0.5;
+
+const MAX_LIVES=3;
+let lives=MAX_LIVES;
+
+let level=1;                 // 1,2,3
+let levelSpeedFactor=1;
+
+/* NUEVO: flags para victoria / spawn */
+let spawningEnabled = true;
+let gameWon = false;
+
+let contenedor,dino,textoScore,suelo,startOverlay,lifeLostOverlay,gameOverOverlay,winOverlay,livesHud;
+let levelOverlay,levelLabel, rainLayer, lightningLayer, winMsg, backToStartWinBtn;
+
+/* ===== AUDIO ===== */
+let audioCtx=null, hitBuffer=null, sfxPrimed=false;
+const bgmEls = {
+  1: () => document.getElementById('bgm-level1'),
+  2: () => document.getElementById('bgm-level2'),
+  3: () => document.getElementById('bgm-level3'),
+};
+const hitEl= ()=>document.getElementById("hit-sfx");
+
+function playBGM(n, reset=false){
+  const target = bgmEls[n] && bgmEls[n]();
+  if(!target) return;
+  [1,2,3].forEach(k => { const a=bgmEls[k](); if(a && a!==target) a.pause(); });
+  if(reset) try{ target.currentTime = 0; }catch(e){}
+  target.play().catch(()=>{});
+}
+function pauseCurrentBGM(){ const a=bgmEls[level] && bgmEls[level](); if(a) a.pause(); }
+function stopAllBGM(){ [1,2,3].forEach(k=>{ const a=bgmEls[k](); if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } }); }
+
+/* Tormenta */
+let lightningTimer=null;
+
+/* ===== BOOT ===== */
+if(document.readyState==="complete"||document.readyState==="interactive"){setTimeout(init,1)} else {document.addEventListener("DOMContentLoaded",init)}
+
+function init(){
+  contenedor=document.getElementById("game");
+  dino=document.getElementById("player");
+  textoScore=document.getElementById("score");
+  suelo=document.querySelector(".suelo");
+  startOverlay=document.getElementById("startOverlay");
+  lifeLostOverlay=document.getElementById("lifeLostOverlay");
+  gameOverOverlay=document.getElementById("gameOverOverlay");
+  winOverlay=document.getElementById("winOverlay");
+  levelOverlay=document.getElementById("levelOverlay");
+  levelLabel=document.getElementById("levelLabel");
+  livesHud=document.getElementById("lives");
+  rainLayer=document.getElementById("rainLayer");
+  lightningLayer=document.getElementById("lightningLayer");
+  winMsg=document.getElementById("winMsg");
+  backToStartWinBtn=document.getElementById("backToStartWin");
+
+  document.querySelectorAll(".char").forEach(c=>c.addEventListener("click",()=>startGame(c.getAttribute("data-animal"))));
+  document.getElementById("startDefault").addEventListener("click",()=>startGame('cow'));
+  document.getElementById("retryBtn").addEventListener("click",resumeAfterDeath);
+  document.getElementById("backToStart").addEventListener("click",backToStart);
+  backToStartWinBtn.addEventListener("click",backToStart);
+
+  contenedor.addEventListener("touchstart", onPress, {passive:true});
+  contenedor.addEventListener("mousedown", onPress);
+  document.addEventListener("keydown", onKeyDown);
+
+  loadHitBuffer();
+  Loop();
 }
 
-function Init() {
-    time = new Date();
-    Start();
-    Loop();
+function Loop(){
+  deltaTime=(new Date()-time)/1000; time=new Date();
+  Update();
+  requestAnimationFrame(Loop);
 }
 
-function Loop() {
-    deltaTime = (new Date() - time) / 1000;
-    time = new Date();
-    Update();
-    requestAnimationFrame(Loop);
+/* ===== AUDIO (Web Audio para SFX) ===== */
+function ensureAudioCtx(){
+  if(!audioCtx){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new Ctx();
+  }
+  return audioCtx;
+}
+function loadHitBuffer(){
+  try{
+    ensureAudioCtx();
+    fetch('./music/estrellar.mp3')
+      .then(r=>r.arrayBuffer())
+      .then(b=>audioCtx.decodeAudioData(b))
+      .then(decoded=>{ hitBuffer = decoded; })
+      .catch(()=>{ /* fallback al <audio> */ });
+  }catch(e){}
+}
+function playHit(){
+  if(hitBuffer && audioCtx && audioCtx.state!=="suspended"){
+    try{
+      const src = audioCtx.createBufferSource();
+      src.buffer = hitBuffer;
+      src.connect(audioCtx.destination);
+      src.start(0);
+      return;
+    }catch(e){}
+  }
+  const s = hitEl();
+  if(s){ s.currentTime=0; s.play().catch(()=>{}); }
+}
+function primeAudioOnce(){
+  if(sfxPrimed) return;
+  sfxPrimed = true;
+  try{ ensureAudioCtx().resume(); }catch(e){}
+  [bgmEls[1](), bgmEls[2](), bgmEls[3](), hitEl()].forEach(a=>{
+    if(!a) return;
+    try{ a.muted=true; a.play().then(()=>{a.pause();a.currentTime=0;a.muted=false;}).catch(()=>{});}catch(e){}
+  });
 }
 
-function reloadPage() {
-      location.reload();
-      
+/* ===== FLUJO ===== */
+function startGame(animal='cow'){
+  selectedAnimal=animal;
+  level=1;
+  levelSpeedFactor=1;
+  contenedor.classList.remove('level-2','level-3','mediodia','tarde','noche');
+  stopStorm();
+  resetAll(true);
+  spawningEnabled = true;
+  gameWon = false;
+  hideWinOverlay();
+  applyCharacter();
+  hideStart();
+  showLevelBanner('NIVEL 1');
+  playBGM(1, true);
+}
+
+function backToStart(){
+  stopAllBGM();
+  showStart();
+}
+
+function showStart(){
+  resetAll(true);
+  startOverlay.classList.add("show");
+  lifeLostOverlay.classList.remove("show");
+  gameOverOverlay.classList.remove("show");
+  hideWinOverlay();
+  levelOverlay.classList.remove("show");
+  stopStorm();
+}
+
+function hideStart(){ startOverlay.classList.remove("show"); }
+
+/* ===== RESET ===== */
+function resetAll(full=false){
+  sueloX=0; dinoPosY=sueloY; velY=0; gameVel=1*levelSpeedFactor;
+  obstaculos.forEach(o=>o.remove()); nubes.forEach(n=>n.remove());
+  obstaculos=[]; nubes=[];
+  dino.classList.remove("dino-estrellado");
+  if(!dino.classList.contains("dino-corriendo")) dino.classList.add("dino-corriendo");
+  parado=false; saltando=false;
+  if(full){ score=0; textoScore.textContent="000"; lives=MAX_LIVES; }
+  renderLives();
+}
+
+function applyCharacter(){
+  dino.classList.remove("cow","chicken");
+  dino.classList.add(selectedAnimal);
+}
+
+/* ===== UPDATE ===== */
+function Update(){
+  // OJO: winOverlay NO pausa el juego
+  if(parado || startOverlay.classList.contains("show") || lifeLostOverlay.classList.contains("show") || gameOverOverlay.classList.contains("show") || levelOverlay.classList.contains("show")) return;
+
+  moverDinosaurio();
+  moverSuelo();
+  if(spawningEnabled){
+    decidirCrearObstaculos();
+  }
+  decidirCrearNubes();
+  moverObstaculos();
+  moverNubes();
+  if(!gameWon){ detectarColision(); }
+  velY -= gravedad * deltaTime;
+
+  if(level===1 && score>=70){ toLevel2(); }
+  else if(level===2 && score>=110){ toLevel3(); }
+  else if(level===3 && score>=150 && !gameWon){ onWin(); }
+}
+
+/* ===== INPUT ===== */
+function onPress(){
+  primeAudioOnce();
+  if(startOverlay.classList.contains("show")) return;
+  if(lifeLostOverlay.classList.contains("show")){ resumeAfterDeath(); return; }
+  if(gameOverOverlay.classList.contains("show")){ backToStart(); return; }
+  if(levelOverlay.classList.contains("show")) return;
+  playBGM(level, false);
+  saltar();
+}
+function onKeyDown(e){
+  const isSpace = e.code==="Space" || e.key===" " || e.keyCode===32;
+  const isArrowUp = e.code==="ArrowUp" || e.keyCode===38;
+  if(isSpace||isArrowUp){
+    e.preventDefault();
+    onPress();
+  }
+}
+
+/* ===== FÍSICA ===== */
+function saltar(){
+  if(dinoPosY===sueloY){ saltando=true; velY=impulso; dino.classList.remove("dino-corriendo"); }
+}
+function moverDinosaurio(){
+  dinoPosY += velY * deltaTime;
+  if(dinoPosY<sueloY) tocarSuelo();
+  dino.style.bottom = dinoPosY + "px";
+}
+function tocarSuelo(){
+  dinoPosY=sueloY; velY=0;
+  if(saltando) dino.classList.add("dino-corriendo");
+  saltando=false;
+}
+function moverSuelo(){
+  sueloX += velEscenarioBase * deltaTime * gameVel;
+  suelo.style.left = -(sueloX % contenedor.clientWidth) + "px";
+}
+
+/* ===== SPAWN ===== */
+function decidirCrearObstaculos(){
+  tiempoHastaObstaculo -= deltaTime;
+  if(tiempoHastaObstaculo<=0) crearObstaculo();
+}
+function decidirCrearNubes(){
+  tiempoNubeVar -= deltaTime;
+  if(tiempoNubeVar<=0) crearNube();
+}
+function crearObstaculo(){
+  const o=document.createElement("div");
+  contenedor.appendChild(o);
+  o.classList.add("cactus");
+  if(Math.random()>0.5) o.classList.add("cactus2");
+  o.posX=contenedor.clientWidth;
+  o.style.left=contenedor.clientWidth+"px";
+  obstaculos.push(o);
+  tiempoHastaObstaculo = tiempoObstaculoMin + Math.random()*(tiempoObstaculoMax-tiempoObstaculoMin)/gameVel;
+}
+function crearNube(){
+  const n=document.createElement("div");
+  contenedor.appendChild(n);
+  n.classList.add("nube");
+  n.posX=contenedor.clientWidth;
+  n.style.left=contenedor.clientWidth+"px";
+  n.style.bottom=(minNubeY + Math.random()*(maxNubeY-minNubeY))+"px";
+  nubes.push(n);
+  tiempoNubeVar = tiempoNubeMin + Math.random()*(tiempoNubeMax-tiempoNubeMin)/gameVel;
+}
+
+/* ===== MOVE ===== */
+function moverObstaculos(){
+  for(let i=obstaculos.length-1;i>=0;i--){
+    if(obstaculos[i].posX < -obstaculos[i].clientWidth){
+      obstaculos[i].remove(); obstaculos.splice(i,1); ganarPuntos();
+    }else{
+      obstaculos[i].posX -= velEscenarioBase * deltaTime * gameVel;
+      obstaculos[i].style.left = obstaculos[i].posX + "px";
     }
-
-//****** GAME LOGIC ********//
-
-var sueloY = 22;
-var velY = 0;
-var impulso = 900;
-var gravedad = 2500;
-
-var dinoPosX = 42;
-var dinoPosY = sueloY; 
-
-var sueloX = 0;
-var velEscenario = 1280/3;
-var gameVel = 1;
-var score = 0;
-
-var parado = false;
-var saltando = false;
-
-var tiempoHastaObstaculo = 2;
-var tiempoObstaculoMin = 0.7;
-var tiempoObstaculoMax = 1.8;
-var obstaculoPosY = 16;
-var obstaculos = [];
-
-var tiempoHastaNube = 0.5;
-var tiempoNubeMin = 0.7;
-var tiempoNubeMax = 2.7;
-var maxNubeY = 270;
-var minNubeY = 100;
-var nubes = [];
-var velNube = 0.5;
-
-var tiempoHastaNave = 0.5;
-var tiempoNaveMin = 0.7;
-var tiempoNaveMax = 2.7;
-var maxNaveY = 270;
-var minNaveY = 100;
-var naves = [];
-var velNave = 0.5;
-
-var contenedor;
-var dino;
-var textoScore;
-var suelo;
-var gameOver;
-
-function Start() {
-    gameOver = document.querySelector(".game-over");
-    suelo = document.querySelector(".suelo");
-    contenedor = document.querySelector(".contenedor");
-    textoScore = document.querySelector(".score");
-    dino = document.querySelector(".dino");
-    document.addEventListener("touchstart", HandleKeyDown);
-    playAudio()
+  }
 }
-
-function Update() {
-    if(parado) return;
-    
-    MoverDinosaurio();
-    MoverSuelo();
-    DecidirCrearObstaculos();
-    DecidirCrearNubes();
-    MoverObstaculos();
-    MoverNubes();
-    DetectarColision();
-
-    velY -= gravedad * deltaTime;
-}
-
-function HandleKeyDown(ev){
-    playAudio()
-         Saltar();
-         
-    
-}
-
-function Saltar(){
-    if(dinoPosY === sueloY){
-        saltando = true;
-        velY = impulso;
-        dino.classList.remove("dino-corriendo");
+function moverNubes(){
+  for(let i=nubes.length-1;i>=0;i--){
+    if(nubes[i].posX < -nubes[i].clientWidth){
+      nubes[i].remove(); nubes.splice(i,1);
+    }else{
+      nubes[i].posX -= velEscenarioBase * deltaTime * gameVel * velNube;
+      nubes[i].style.left = nubes[i].posX + "px";
     }
+  }
 }
 
-function MoverDinosaurio() {
-    dinoPosY += velY * deltaTime;
-    if(dinoPosY < sueloY){
-        
-        TocarSuelo();
+/* ===== SCORE / DIFICULTAD ===== */
+function ganarPuntos(){
+  score++; textoScore.textContent = String(score).padStart(3,'0');
+
+  if(level===1){
+    if(score===5){ gameVel=1.5*levelSpeedFactor; contenedor.classList.add("mediodia"); }
+    else if(score===10){ gameVel=2*levelSpeedFactor; contenedor.classList.add("tarde"); }
+    else if(score===20){ gameVel=3*levelSpeedFactor; contenedor.classList.add("noche"); }
+  }
+  suelo.style.animationDuration=(3/gameVel)+"s";
+}
+
+/* ===== COLISIÓN / VIDAS ===== */
+function detectarColision(){
+  for(let i=0;i<obstaculos.length;i++){
+    if(obstaculos[i].posX > dinoPosX + dino.clientWidth) break;
+    if(isCollision(dino,obstaculos[i],10,30,15,20)){ onDeath(); break; }
+  }
+}
+function onDeath(){
+  dino.classList.remove("dino-corriendo");
+  dino.classList.add("dino-estrellado");
+  parado = true;
+
+  playHit();
+  pauseCurrentBGM();
+
+  lives--; renderLives();
+  if(lives<=0){ showGameOver(); }
+  else{ lifeLostOverlay.classList.add("show"); }
+}
+function resumeAfterDeath(){
+  lifeLostOverlay.classList.remove("show");
+  obstaculos.forEach(o=>o.remove()); obstaculos=[];
+  nubes.forEach(n=>n.remove()); nubes=[];
+  dino.classList.remove("dino-estrellado");
+  dino.classList.add("dino-corriendo");
+  dinoPosY=sueloY; velY=0; parado=false;
+  playBGM(level, false);
+}
+function showGameOver(){ gameOverOverlay.classList.add("show"); stopAllBGM(); }
+
+/* ===== VICTORIA ===== */
+function onWin(){
+  gameWon = true;
+  spawningEnabled = false;              // no más obstáculos
+  obstaculos.forEach(o=>o.remove()); obstaculos=[];  // limpiar los que haya
+  gameVel = 1;                          // ritmo inicial
+  // mensaje 1
+  winMsg.textContent = '¡GANASTE! Lograste salvar al animal';
+  backToStartWinBtn.style.display = 'none';
+  winOverlay.classList.add('show');     // se muestra pero NO pausa el juego (ver Update)
+  // a los 15s mostramos créditos + botón
+  setTimeout(()=>{
+    winMsg.textContent = 'Idea general y desarrollo: Ricardo Manzo para la "ZONA ANIMAL"';
+    backToStartWinBtn.style.display = 'inline-block';
+  }, 15000);
+}
+function hideWinOverlay(){
+  winOverlay.classList.remove('show');
+  backToStartWinBtn.style.display = 'none';
+  winMsg.textContent = '¡GANASTE!';
+  gameWon = false;
+}
+
+/* ===== NIVELES ===== */
+function showLevelBanner(text){
+  levelLabel.textContent=text;
+  levelOverlay.classList.add('show');
+  const prevParado = parado;
+  parado = true;
+  setTimeout(()=>{
+    levelOverlay.classList.remove('show');
+    parado = prevParado;
+  }, 1300);
+}
+function toLevel2(){
+  level=2;
+  levelSpeedFactor = 1.6;
+  contenedor.classList.add('level-2');
+  contenedor.classList.remove('level-3','mediodia','tarde','noche');
+  stopStorm();
+  resetAll(false);
+  spawningEnabled = true; gameWon = false;
+  score = 0; textoScore.textContent = "000";
+  gameVel = 1.8 * levelSpeedFactor;
+  showLevelBanner('NIVEL 2');
+  playBGM(2, true);
+}
+function toLevel3(){
+  level=3;
+  levelSpeedFactor = 2.0;
+  contenedor.classList.add('level-3');
+  contenedor.classList.remove('level-2'); // oculta UFO
+  startStorm();
+  resetAll(false);
+  spawningEnabled = true; gameWon = false;
+  score = 0; textoScore.textContent = "000";
+  gameVel = 2.2 * levelSpeedFactor;
+  showLevelBanner('NIVEL 3');
+  playBGM(3, true);
+}
+
+/* ===== TORMENTA (LLUVIA + RELÁMPAGOS) ===== */
+function startStorm(){
+  rainLayer.innerHTML='';
+  const W = contenedor.clientWidth;
+  const dropCount = 120;
+  for(let i=0;i<dropCount;i++){
+    const d = document.createElement('div');
+    d.className='drop';
+    const left = Math.random()*W;
+    const delay = Math.random()*1000;
+    const dur = 800 + Math.random()*900;
+    d.style.left = left+'px';
+    d.style.animationDuration = dur+'ms';
+    d.style.animationDelay = delay+'ms';
+    rainLayer.appendChild(d);
+  }
+  lightningLayer.innerHTML='';
+  clearInterval(lightningTimer);
+  lightningTimer = setInterval(()=>{
+    if(Math.random()<0.35){
+      const f = document.createElement('div');
+      f.className='flash';
+      lightningLayer.appendChild(f);
+      setTimeout(()=>f.remove(), 320);
     }
-    dino.style.bottom = dinoPosY+"px";
+  }, 600);
+}
+function stopStorm(){
+  rainLayer.innerHTML='';
+  lightningLayer.innerHTML='';
+  clearInterval(lightningTimer);
+  lightningTimer=null;
 }
 
-function TocarSuelo() {
-    dinoPosY = sueloY;
-    velY = 0;
-    if(saltando){
-        dino.classList.add("dino-corriendo");
-    }
-    saltando = false;
+/* ===== UTIL ===== */
+function isCollision(a,b,padT,padR,padB,padL){
+  const ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+  return !(
+    ((ar.top + ar.height - padB) < br.top) ||
+    (ar.top + padT > (br.top + br.height)) ||
+    ((ar.left + ar.width - padR) < br.left) ||
+    (ar.left + padL > (br.left + br.width))
+  );
 }
+</script>
 
-function MoverSuelo() {
-    sueloX += CalcularDesplazamiento();
-    suelo.style.left = -(sueloX % contenedor.clientWidth) + "px";
-}
-
-function CalcularDesplazamiento() {
-    return velEscenario * deltaTime * gameVel;
-}
-
-function Estrellarse() {
-    dino.classList.remove("dino-corriendo");
-    dino.classList.add("dino-estrellado");
-    parado = true;
-    
-}
-
-function DecidirCrearObstaculos() {
-    tiempoHastaObstaculo -= deltaTime;
-    if(tiempoHastaObstaculo <= 0) {
-        CrearObstaculo();
-    }
-}
-
-function DecidirCrearNubes() {
-    tiempoHastaNube -= deltaTime;
-    if(tiempoHastaNube <= 0) {
-        CrearNube();
-    }
-}
-
-function DecidirCrearNave() {
-    tiempoHastaNave -= deltaTime;
-    if(tiempoHastaNaveZ <= 0) {
-        CrearNave();
-    }
-}
-
-function CrearObstaculo() {
-    var obstaculo = document.createElement("div");
-    contenedor.appendChild(obstaculo);
-    obstaculo.classList.add("cactus");
-    if(Math.random() > 0.5) obstaculo.classList.add("cactus2");
-    obstaculo.posX = contenedor.clientWidth;
-    obstaculo.style.left = contenedor.clientWidth+"px";
-
-    obstaculos.push(obstaculo);
-    tiempoHastaObstaculo = tiempoObstaculoMin + Math.random() * (tiempoObstaculoMax-tiempoObstaculoMin) / gameVel;
-}
-
-function CrearNube() {
-    var nube = document.createElement("div");
-    contenedor.appendChild(nube);
-    nube.classList.add("nube");
-    nube.posX = contenedor.clientWidth;
-    nube.style.left = contenedor.clientWidth+"px";
-    nube.style.bottom = minNubeY + Math.random() * (maxNubeY-minNubeY)+"px";
-    
-    nubes.push(nube);
-    tiempoHastaNube = tiempoNubeMin + Math.random() * (tiempoNubeMax-tiempoNubeMin) / gameVel;
-}
-
-function CrearNave() {
-    var nave = document.createElement("div");
-    contenedor.appendChild(nave);
-    nave.classList.add("nave");
-    nave.posX = contenedor.clientWidth;
-    nave.style.left = contenedor.clientWidth+"px";
-    nave.style.bottom = minNaveY + Math.random() * (maxNaveY-minNaveY)+"px";
-    
-    naves.push(nave);
-    tiempoHastaNave = tiempoNaveMin + Math.random() * (tiempoNaveMax-tiempoNaveMin) / gameVel;
-}
-
-function MoverObstaculos() {
-    for (var i = obstaculos.length - 1; i >= 0; i--) {
-        if(obstaculos[i].posX < -obstaculos[i].clientWidth) {
-            obstaculos[i].parentNode.removeChild(obstaculos[i]);
-            obstaculos.splice(i, 1);
-            GanarPuntos();
-        }else{
-            obstaculos[i].posX -= CalcularDesplazamiento();
-            obstaculos[i].style.left = obstaculos[i].posX+"px";
-        }
-    }
-}
-
-function MoverNubes() {
-    for (var i = nubes.length - 1; i >= 0; i--) {
-        if(nubes[i].posX < -nubes[i].clientWidth) {
-            nubes[i].parentNode.removeChild(nubes[i]);
-            nubes.splice(i, 1);
-        }else{
-            nubes[i].posX -= CalcularDesplazamiento() * velNube;
-            nubes[i].style.left = nubes[i].posX+"px";
-        }
-    }
-}
-
-function GanarPuntos() {
-    score++;
-    textoScore.innerText = score;
-    if(score == 5){
-        gameVel = 1.5;
-        contenedor.classList.add("mediodia");
-    }else if(score == 10) {
-        gameVel = 2;
-        contenedor.classList.add("tarde");
-    } else if(score == 20) {
-        gameVel = 3;
-        contenedor.classList.add("noche");
-    }
-    suelo.style.animationDuration = (3/gameVel)+"s";
-}
-
-function GameOver() {
-    Estrellarse();
-    pauseAudio()
-    gameOver.style.display = "block";
-    
-}
-
-function DetectarColision() {
-    for (var i = 0; i < obstaculos.length; i++) {
-        if(obstaculos[i].posX > dinoPosX + dino.clientWidth) {
-            //EVADE
-            break; //al estar en orden, no puede chocar con más
-        }else{
-            if(IsCollision(dino, obstaculos[i], 10, 30, 15, 20)) {
-                GameOver();
-                
-            }
-        }
-    }
-}
-
-// Función para pausar la canción
-function pauseAudio() {
-      var audio = document.getElementById("background-music");
-      audio.pause();
-    }
-
-//start audio
-function playAudio() {
-      var audio = document.getElementById("background-music");
-      audio.play();
-    }
-
-function IsCollision(a, b, paddingTop, paddingRight, paddingBottom, paddingLeft) {
-    var aRect = a.getBoundingClientRect();
-    var bRect = b.getBoundingClientRect();
-
-    return !(
-        ((aRect.top + aRect.height - paddingBottom) < (bRect.top)) ||
-        (aRect.top + paddingTop > (bRect.top + bRect.height)) ||
-        ((aRect.left + aRect.width - paddingRight) < bRect.left) ||
-        (aRect.left + paddingLeft > (bRect.left + bRect.width))
-    );
-}
-
-
-</script>   
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-</body>
-</html>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
