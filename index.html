@@ -30,8 +30,8 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 .mediodia{ background-color:#ffdcf3 }
 .tarde   { background-color:#ffadad }
 .noche   { background-color:#aca8c7 }
-.level-2{ background:#000 !important; }  /* oscuro */
-.level-3{ background:#000 !important; }  /* tormenta */
+.level-2{ background:#000 !important; }
+.level-3{ background:#000 !important; }
 
 /* ===== HUD ===== */
 .score{
@@ -75,12 +75,12 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 
 /* ===== UFO NIVEL 2 ===== */
 #ufoLayer{
-  position:absolute; inset:0; pointer-events:none; display:none; z-index:1; /* sobre nubes, bajo cactus/dino */
+  position:absolute; inset:0; pointer-events:none; display:none; z-index:1;
 }
 .level-2 #ufoLayer{ display:block; }
 #ufoLayer img{
   position:absolute;
-  width:130px;                   /* tamaño pequeño */
+  width:130px;
   top:22px;
   left:-220px;
   animation: ufoMove 12s linear infinite, ufoBob 1.8s ease-in-out infinite;
@@ -100,7 +100,7 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 
 /* ===== OVERLAY PORTADA (FULL) ===== */
 .overlay{
-  position:fixed;inset:0;width:100vw;height:100dvh;z-index:999;
+  position:fixed;inset:0;width:100vw;height:100dvh;z-index:99999;
   display:none;align-items:center;justify-content:center;background:#0b0b0d;
 }
 .overlay.show{ display:flex }
@@ -114,7 +114,7 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
   position:relative;z-index:2;width:92%;max-width:780px;padding:22px;text-align:center;
   color:#eaeaea;background:var(--panel);
   border:4px solid #fff;outline:4px solid #000;box-shadow:inset 0 0 0 4px #444,0 12px 0 #000;
-  border-radius:8px;font-family:'Press Start 2P',monospace;
+  border-radius:8px;font-family:'Press Start 2P',monospace;pointer-events:auto;
 }
 .title-xxl{ font-size:26px;color:var(--accent);text-shadow:0 3px 0 #000;margin-bottom:10px }
 .sub{ font-size:12px;color:#cacaca;line-height:1.6;margin-bottom:14px }
@@ -133,7 +133,7 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 
 .retro-btn{
   display:inline-block;padding:12px 18px;background:#2b2b2b;color:#fff;border:3px solid #fff;outline:3px solid #000;border-radius:8px;
-  box-shadow:0 6px 0 #000;text-decoration:none;font-family:'Press Start 2P',monospace;font-size:12px;
+  box-shadow:0 6px 0 #000;text-decoration:none;font-family:'Press Start 2P',monospace;font-size:12px;cursor:pointer;
 }
 .retro-btn:hover{ transform:translateY(-1px) }
 .retro-btn:active{ transform:translateY(2px);box-shadow:0 2px 0 #000 }
@@ -156,74 +156,35 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 .retro-btn.green:hover{ transform:translateY(-1px) }
 .retro-btn.green:active{ transform:translateY(2px); box-shadow:0 2px 0 #0e3b24 }
 
-/* GAME OVER texto rojo */
-.go-msg{
-  color:#ff3b3b;
-  font-size:20px;
-  margin-bottom:12px;
-  text-shadow:0 2px 0 #000, 0 0 10px rgba(255,59,59,.45);
-}
+.go-msg{ color:#ff3b3b;font-size:20px;margin-bottom:12px;text-shadow:0 2px 0 #000, 0 0 10px rgba(255,59,59,.45) }
+.win-msg{ color:#ffe46b;font-size:20px;margin-bottom:12px;text-shadow:0 2px 0 #000, 0 0 10px rgba(255,228,107,.45) }
 
-/* WIN (texto amarillo) */
-.win-msg{
-  color:#ffe46b;
-  font-size:20px;
-  margin-bottom:12px;
-  text-shadow:0 2px 0 #000, 0 0 10px rgba(255,228,107,.45);
-}
-
-/* Banner de nivel */
-.level-overlay{
-  position:absolute;inset:0;z-index:70;display:none;align-items:center;justify-content:center;
-  background:transparent; pointer-events:none;
-}
+.level-overlay{ position:absolute;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:transparent; pointer-events:none }
 .level-overlay.show{ display:flex }
-.level-label{
-  font-family:'Press Start 2P', monospace; font-size:18px; color:#fff;
-  text-shadow:0 2px 0 #000, 0 0 8px rgba(0,0,0,.4);
-}
+.level-label{ font-family:'Press Start 2P', monospace; font-size:18px; color:#fff; text-shadow:0 2px 0 #000, 0 0 8px rgba(0,0,0,.4) }
 
 /* ===== TORMENTA NIVEL 3 ===== */
 #rainLayer, #lightningLayer{
   position:absolute;inset:0;pointer-events:none;z-index:5;
   display:none;
 }
-.level-3 #rainLayer,
-.level-3 #lightningLayer{ display:block; }
+.level-3 #rainLayer, .level-3 #lightningLayer{ display:block; }
 
-.drop{
-  position:absolute;top:-20px;width:2px;height:14px;background:rgba(180,200,255,.8);
-  filter:blur(.2px);
-  animation:fall linear infinite;
-}
-@keyframes fall{ to{ transform:translateY(320px); } }
-
-.flash{
-  position:absolute;inset:0;background:linear-gradient(#fff,rgba(255,255,255,.6) 40%, rgba(255,255,255,0) 60%);
-  opacity:0; animation:flash 300ms ease-out; mix-blend-mode:screen;
-}
-@keyframes flash{
-  0%{ opacity:.0 } 10%{ opacity:.9 } 40%{ opacity:.25 } 100%{ opacity:0 }
-}
+.drop{ position:absolute;top:-20px;width:2px;height:14px;background:rgba(180,200,255,.8);filter:blur(.2px);animation:fall linear infinite }
+@keyframes fall{ to{ transform:translateY(320px) } }
+.flash{ position:absolute;inset:0;background:linear-gradient(#fff,rgba(255,255,255,.6) 40%, rgba(255,255,255,0) 60%);opacity:0;animation:flash 300ms ease-out;mix-blend-mode:screen }
+@keyframes flash{ 0%{opacity:0} 10%{opacity:.9} 40%{opacity:.25} 100%{opacity:0} }
   </style>
 </head>
 <body>
 
-  <!-- MÚSICA (una por nivel, todas precargadas) -->
-  <audio id="bgm-level1" preload="auto" loop>
-    <source src="./music/fondoMusic.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="bgm-level2" preload="auto" loop>
-    <source src="./music/level2.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="bgm-level3" preload="auto" loop>
-    <source src="./music/level3.mp3" type="audio/mpeg">
-  </audio>
+  <!-- MÚSICA -->
+  <audio id="bgm-level1" preload="auto" loop><source src="./music/fondoMusic.mp3" type="audio/mpeg"></audio>
+  <audio id="bgm-level2" preload="auto" loop><source src="./music/level2.mp3" type="audio/mpeg"></audio>
+  <audio id="bgm-level3" preload="auto" loop><source src="./music/level3.mp3" type="audio/mpeg"></audio>
 
-  <!-- SFX de colisión -->
-  <audio id="hit-sfx" preload="auto" playsinline>
-    <source src="./music/estrellar.mp3" type="audio/mpeg">
-  </audio>
+  <!-- SFX -->
+  <audio id="hit-sfx" preload="auto" playsinline><source src="./music/estrellar.mp3" type="audio/mpeg"></audio>
 
   <!-- Juego -->
   <div class="contenedor" id="game">
@@ -234,11 +195,9 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
     <div class="dino cow dino-corriendo" id="player"></div>
 
     <!-- UFO (solo NIVEL 2) -->
-    <div id="ufoLayer">
-      <img src="img/ufo2.gif" alt="UFO">
-    </div>
+    <div id="ufoLayer"><img src="img/ufo2.gif" alt="UFO"></div>
 
-    <!-- Capa de lluvia y relámpagos -->
+    <!-- Tormenta -->
     <div id="rainLayer"></div>
     <div id="lightningLayer"></div>
 
@@ -250,7 +209,7 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
       </div>
     </div>
 
-    <!-- GAME OVER (in-game) -->
+    <!-- GAME OVER -->
     <div class="overlay--ingame" id="gameOverOverlay">
       <div class="life-lost-wrap">
         <div class="go-msg">GAME OVER</div>
@@ -258,7 +217,7 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
       </div>
     </div>
 
-    <!-- WIN (in-game) -->
+    <!-- WIN -->
     <div class="overlay--ingame" id="winOverlay">
       <div class="life-lost-wrap">
         <div class="win-msg">¡GANASTE!</div>
@@ -277,15 +236,15 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
     <div class="panel">
       <div class="title-xxl">SAVE THE COW</div>
       <div class="sub">Elegí tu personaje. Saltá con <b>clic</b>, <b>toque</b>, <b>Espacio</b> o <b>↑</b>. Tenés <b>3 vidas</b>.</div>
-      <div class="start-grid">
-        <div class="char" data-animal="cow">
+      <div class="start-grid" id="charGrid">
+        <div class="char" data-animal="cow" tabindex="0" role="button" aria-label="Elegir vaca">
           <div class="char-swatch swatch-cow"></div>
           <div>
             <div class="char-name">VACA</div>
             <div class="char-desc">Sprite original, paso firme 🐄</div>
           </div>
         </div>
-        <div class="char" data-animal="chicken">
+        <div class="char" data-animal="chicken" tabindex="0" role="button" aria-label="Elegir gallina">
           <div class="char-swatch swatch-chicken"></div>
           <div>
             <div class="char-name">GALLINA</div>
@@ -293,7 +252,7 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
           </div>
         </div>
       </div>
-      <a class="retro-btn" id="startDefault">START (VACA)</a>
+      <a class="retro-btn" id="startDefault" tabindex="0" role="button" aria-label="Start vaca">START (VACA)</a>
     </div>
   </div>
 
@@ -339,7 +298,6 @@ const hitEl= ()=>document.getElementById("hit-sfx");
 function playBGM(n, reset=false){
   const target = bgmEls[n] && bgmEls[n]();
   if(!target) return;
-  // pausar otras
   [1,2,3].forEach(k => { const a=bgmEls[k](); if(a && a!==target) a.pause(); });
   if(reset) try{ target.currentTime = 0; }catch(e){}
   target.play().catch(()=>{});
@@ -349,6 +307,22 @@ function stopAllBGM(){ [1,2,3].forEach(k=>{ const a=bgmEls[k](); if(a){ a.pause(
 
 /* Tormenta */
 let lightningTimer=null;
+
+/* ===== HELPERS DE INPUT PARA BOTONES ===== */
+function bindInteractive(el, handler){
+  if(!el) return;
+  // click/pointer/touch
+  el.addEventListener('click', (e)=>{e.preventDefault(); handler(e);});
+  el.addEventListener('pointerdown', (e)=>{e.preventDefault(); handler(e);}, {passive:false});
+  el.addEventListener('touchstart', (e)=>{e.preventDefault(); handler(e);}, {passive:false});
+  // teclado (Space / Enter)
+  el.addEventListener('keydown', (e)=>{
+    if(e.code==='Space' || e.code==='Enter'){
+      e.preventDefault();
+      handler(e);
+    }
+  });
+}
 
 /* ===== BOOT ===== */
 if(document.readyState==="complete"||document.readyState==="interactive"){setTimeout(init,1)} else {document.addEventListener("DOMContentLoaded",init)}
@@ -368,15 +342,24 @@ function init(){
   rainLayer=document.getElementById("rainLayer");
   lightningLayer=document.getElementById("lightningLayer");
 
-  document.querySelectorAll(".char").forEach(c=>c.addEventListener("click",()=>startGame(c.getAttribute("data-animal"))));
-  document.getElementById("startDefault").addEventListener("click",()=>startGame('cow'));
-  document.getElementById("retryBtn").addEventListener("click",resumeAfterDeath);
-  document.getElementById("backToStart").addEventListener("click",backToStart);
-  document.getElementById("backToStartWin").addEventListener("click",backToStart);
+  // Portada (tarjetas + botón)
+  const grid=document.getElementById('charGrid');
+  grid.querySelectorAll('.char').forEach(card=>{
+    bindInteractive(card, ()=> startGame(card.getAttribute('data-animal')||'cow'));
+  });
+  bindInteractive(document.getElementById("startDefault"), ()=> startGame('cow'));
 
-  contenedor.addEventListener("touchstart", onPress, {passive:true});
-  contenedor.addEventListener("mousedown", onPress);
-  document.addEventListener("keydown", onKeyDown);
+  // Modales
+  bindInteractive(document.getElementById("retryBtn"), resumeAfterDeath);
+  bindInteractive(document.getElementById("backToStart"), backToStart);
+  bindInteractive(document.getElementById("backToStartWin"), backToStart);
+
+  // === CONTROLES DE JUEGO (ROBUSTOS) ===
+  // pointerdown/touchstart en toda la ventana para salto
+  window.addEventListener("pointerdown", onPress, {passive:true});
+  window.addEventListener("touchstart", onPress, {passive:true});
+  // teclado en captura para ignorar el foco
+  window.addEventListener("keydown", onKeyDown, true);
 
   loadHitBuffer();
   Loop();
@@ -423,7 +406,6 @@ function primeAudioOnce(){
   if(sfxPrimed) return;
   sfxPrimed = true;
   try{ ensureAudioCtx().resume(); }catch(e){}
-  // Desbloquear TODAS las bgm y el SFX
   [bgmEls[1](), bgmEls[2](), bgmEls[3](), hitEl()].forEach(a=>{
     if(!a) return;
     try{
@@ -462,7 +444,11 @@ function showStart(){
   stopStorm();
 }
 
-function hideStart(){ startOverlay.classList.remove("show"); }
+function hideStart(){
+  startOverlay.classList.remove("show");
+  // Para que Space/Enter no sigan sobre el botón oculto
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+}
 
 /* ===== RESET ===== */
 function resetAll(full=false){
@@ -507,13 +493,16 @@ function onPress(){
   if(lifeLostOverlay.classList.contains("show")){ resumeAfterDeath(); return; }
   if(gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show")){ backToStart(); return; }
   if(levelOverlay.classList.contains("show")) return;
-  // continuar música del nivel actual
   playBGM(level, /*reset*/false);
   saltar();
 }
 function onKeyDown(e){
   const isSpace = e.code==="Space" || e.key===" " || e.keyCode===32;
   const isArrowUp = e.code==="ArrowUp" || e.keyCode===38;
+  // desde portada, Enter/Space también inician
+  if(startOverlay.classList.contains('show') && (e.code==='Enter'||isSpace)){
+    e.preventDefault(); startGame('cow'); return;
+  }
   if(isSpace||isArrowUp){
     e.preventDefault();
     onPress();
@@ -675,7 +664,6 @@ function toLevel3(){
 
   contenedor.classList.add('level-3');
   contenedor.classList.remove('level-2');  
-  
   startStorm();
   resetAll(false);
   score = 0; textoScore.textContent = "000";
@@ -684,7 +672,7 @@ function toLevel3(){
   playBGM(3, /*reset*/true);
 }
 
-/* ===== TORMENTA (LLUVIA + RELÁMPAGOS) ===== */
+/* ===== TORMENTA ===== */
 function startStorm(){
   rainLayer.innerHTML='';
   const W = contenedor.clientWidth;
