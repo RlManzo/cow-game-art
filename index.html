@@ -220,7 +220,7 @@ function pauseCurrentBGM(){ const a=bgmEls[level] && bgmEls[level](); if(a) a.pa
 function stopAllBGM(){ [1,2,3].forEach(k=>{ const a=bgmEls[k](); if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } }); }
 
 /* Tormenta */
-let lightningTimer=null;
+//let lightningTimer=null;
 
 /* ===== HELPERS DE INPUT PARA BOTONES ===== */
 function bindInteractive(el, handler){
