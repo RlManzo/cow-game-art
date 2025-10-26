@@ -10,178 +10,79 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
   <style>
-:root{
-  --accent:#ffd66b;
-  --panel:#121212;
-  --heart-img:url('img/corazones.png');
-}
-
+/* ... (tus estilos iguales, sin cambios) ... */
+:root{--accent:#ffd66b;--panel:#121212;--heart-img:url('img/corazones.png')}
 *{margin:0;padding:0;box-sizing:border-box}
 body{height:100vh;background:#584040;display:flex;align-items:center;justify-content:center}
+.contenedor{width:920px;height:280px;position:relative;overflow:hidden;border-radius:12px;background:linear-gradient(#b7d6c7,transparent) #ffe2d1;transition:background-color 1s linear, background 1s linear;box-shadow:0 20px 40px rgba(0,0,0,.35);image-rendering:pixelated}
+.mediodia{background-color:#ffdcf3}.tarde{background-color:#ffadad}.noche{background-color:#aca8c7}
+.level-2{background:#000 !important}.level-3{background:#000 !important}
+.score{position:absolute;top:10px;right:14px;z-index:20;color:#d48871;font:700 18px 'Press Start 2P',monospace}
+.lives{position:absolute;top:10px;left:12px;height:28px;display:flex;gap:6px;z-index:20}
+.life{width:28px;height:28px;background-image:var(--heart-img);background-repeat:no-repeat;background-size:300% 100%;opacity:1;transition:opacity .15s ease, transform .15s ease}
+.life.lost{opacity:0;transform:scale(.9)}.heart-1{background-position:0% 0}.heart-2{background-position:50% 0}.heart-3{background-position:100% 0}
+.suelo{width:200%;height:42px;position:absolute;bottom:0;left:0;background:url('img/suelo.png') repeat-x 0 0;background-size:50% 42px}
+.dino{width:79px;height:84px;position:absolute;bottom:22px;left:42px;z-index:3;background-size:336px 90px;background-position-x:0}
+.dino.cow{background-image:url('img/cow-test2.png')}
+.dino.chicken{background-image:url('img/chicken-test1.png')}
+.dino-corriendo{animation:animarDino .25s steps(2) infinite}.dino-estrellado{background-position-x:-252px}
+@keyframes animarDino{from{background-position-x:-84px}to{background-position-x:-252px}}
+.cactus{width:46px;height:81px;position:absolute;bottom:16px;left:600px;z-index:2;background:url('img/hacha.png') no-repeat}
+.cactus2{width:98px;height:66px;background:url('img/hacha1.png') no-repeat}
+.nube{width:92px;height:26px;position:absolute;z-index:0;background:url('img/nube.png') no-repeat;background-size:92px 26px}
 
-/* ===== CAMPO DE JUEGO ===== */
-.contenedor{
-  width:920px;height:280px;position:relative;overflow:hidden;border-radius:12px;
-  background:linear-gradient(#b7d6c7,transparent) #ffe2d1;
-  transition:background-color 1s linear, background 1s linear;
-  box-shadow:0 20px 40px rgba(0,0,0,.35);
-  image-rendering:pixelated;
-}
-.mediodia{ background-color:#ffdcf3 }
-.tarde   { background-color:#ffadad }
-.noche   { background-color:#aca8c7 }
-.level-2{ background:#000 !important; }
-.level-3{ background:#000 !important; }
+/* UFO NIVEL 2 */
+#ufoLayer{position:absolute;inset:0;pointer-events:none;display:none;z-index:1}
+.level-2 #ufoLayer{display:block}
+#ufoLayer img{position:absolute;width:130px;top:22px;left:-220px;animation:ufoMove 12s linear infinite, ufoBob 1.8s ease-in-out infinite;image-rendering:pixelated;opacity:.95;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35))}
+@keyframes ufoMove{0%{transform:translateX(-220px)}50%{transform:translateX(980px)}100%{transform:translateX(-220px)}}
+@keyframes ufoBob{0%,100%{top:22px}50%{top:28px}}
 
-/* ===== HUD ===== */
-.score{
-  position:absolute;top:10px;right:14px;z-index:20;
-  color:#d48871;font:700 18px 'Press Start 2P',monospace;
-}
-.lives{
-  position:absolute;top:10px;left:12px;height:28px;display:flex;gap:6px;z-index:20
-}
-.life{
-  width:28px;height:28px;background-image:var(--heart-img);background-repeat:no-repeat;background-size:300% 100%;
-  opacity:1;transition:opacity .15s ease, transform .15s ease;
-}
-.life.lost{ opacity:0; transform:scale(.9) }
-.heart-1{ background-position:0% 0 }
-.heart-2{ background-position:50% 0 }
-.heart-3{ background-position:100% 0 }
+/* Overlays */
+.overlay{position:fixed;inset:0;width:100vw;height:100dvh;z-index:99999;display:none;align-items:center;justify-content:center;background:#0b0b0d}
+.overlay.show{display:flex}
+.overlay::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 2px, transparent 2px, transparent 4px)}
+.panel{position:relative;z-index:2;width:92%;max-width:780px;padding:22px;text-align:center;color:#eaeaea;background:var(--panel);border:4px solid #fff;outline:4px solid #000;box-shadow:inset 0 0 0 4px #444,0 12px 0 #000;border-radius:8px;font-family:'Press Start 2P',monospace;pointer-events:auto}
+.title-xxl{font-size:26px;color:var(--accent);text-shadow:0 3px 0 #000;margin-bottom:10px}
+.sub{font-size:12px;color:#cacaca;line-height:1.6;margin-bottom:14px}
+.start-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0}
+.char{display:flex;align-items:center;gap:12px;padding:12px;background:#1f1f1f;border:3px solid #555;border-radius:8px;cursor:pointer;transition:transform .08s ease,border-color .08s ease}
+.char:hover{transform:translateY(-2px);border-color:#9ad3ff}
+.char-swatch{width:84px;height:90px;background-size:336px 90px;background-position-x:-84px}
+.swatch-cow{background-image:url('img/cow-test2.png')}
+.swatch-chicken{background-image:url('img/chicken-test1.png')}
+.char-name{font-size:14px;color:#fff}.char-desc{font-size:10px;color:#a8a8a8;margin-top:6px;text-align:left}
+.retro-btn{display:inline-block;padding:12px 18px;background:#2b2b2b;color:#fff;border:3px solid #fff;outline:3px solid #000;border-radius:8px;box-shadow:0 6px 0 #000;text-decoration:none;font-family:'Press Start 2P',monospace;font-size:12px;cursor:pointer}
+.retro-btn:hover{transform:translateY(-1px)}.retro-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #000}
 
-/* ===== MUNDO ===== */
-.suelo{
-  width:200%;height:42px;position:absolute;bottom:0;left:0;
-  background:url('img/suelo.png') repeat-x 0 0;background-size:50% 42px;
-}
-.dino{
-  width:79px;height:84px;position:absolute;bottom:22px;left:42px;z-index:3;
-  background-size:336px 90px;background-position-x:0;
-}
-.dino.cow     { background-image:url('img/cow-test2.png') }
-.dino.chicken { background-image:url('img/chicken-test1.png') }
-.dino-corriendo{ animation:animarDino .25s steps(2) infinite }
-.dino-estrellado{ background-position-x:-252px }
+.overlay--ingame{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:transparent;pointer-events:none}
+.overlay--ingame.show{display:flex}
+.life-lost-wrap{text-align:center;pointer-events:auto;font-family:'Press Start 2P',monospace}
+.life-lost-msg{color:#fff;font-size:18px;margin-bottom:12px;text-shadow:0 2px 0 #000,0 0 8px rgba(0,0,0,.35)}
+.retro-btn.green{background:#1d7e48;border:3px solid #e7ffe7;outline:3px solid #0e3b24;color:#fff;box-shadow:0 6px 0 #0e3b24}
+.retro-btn.green:hover{transform:translateY(-1px)}.retro-btn.green:active{transform:translateY(2px);box-shadow:0 2px 0 #0e3b24}
+.go-msg{color:#ff3b3b;font-size:20px;margin-bottom:12px;text-shadow:0 2px 0 #000,0 0 10px rgba(255,59,59,.45)}
+.win-msg{color:#ffe46b;font-size:20px;margin-bottom:12px;text-shadow:0 2px 0 #000,0 0 10px rgba(255,228,107,.45)}
 
-@keyframes animarDino{
-  from{ background-position-x:-84px }
-  to  { background-position-x:-252px }
-}
+.level-overlay{position:absolute;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:transparent;pointer-events:none}
+.level-overlay.show{display:flex}
+.level-label{font-family:'Press Start 2P',monospace;font-size:18px;color:#fff;text-shadow:0 2px 0 #000,0 0 8px rgba(0,0,0,.4)}
 
-.cactus{ width:46px;height:81px;position:absolute;bottom:16px;left:600px;z-index:2;background:url('img/hacha.png') no-repeat }
-.cactus2{ width:98px;height:66px;background:url('img/hacha1.png') no-repeat }
-.nube{ width:92px;height:26px;position:absolute;z-index:0;background:url('img/nube.png') no-repeat;background-size:92px 26px }
-
-/* ===== UFO NIVEL 2 ===== */
-#ufoLayer{
-  position:absolute; inset:0; pointer-events:none; display:none; z-index:1;
-}
-.level-2 #ufoLayer{ display:block; }
-#ufoLayer img{
-  position:absolute;
-  width:130px;
-  top:22px;
-  left:-220px;
-  animation: ufoMove 12s linear infinite, ufoBob 1.8s ease-in-out infinite;
-  image-rendering:pixelated;
-  opacity:0.95;
-  filter: drop-shadow(0 2px 0 rgba(0,0,0,.35));
-}
-@keyframes ufoMove{
-  0%   { transform: translateX(-220px); }
-  50%  { transform: translateX(980px); }
-  100% { transform: translateX(-220px); }
-}
-@keyframes ufoBob{
-  0%,100%{ top:22px; }
-  50%    { top:28px; }
-}
-
-/* ===== OVERLAY PORTADA (FULL) ===== */
-.overlay{
-  position:fixed;inset:0;width:100vw;height:100dvh;z-index:99999;
-  display:none;align-items:center;justify-content:center;background:#0b0b0d;
-}
-.overlay.show{ display:flex }
-.overlay::before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 2px, transparent 2px, transparent 4px);
-}
-
-/* panel portada */
-.panel{
-  position:relative;z-index:2;width:92%;max-width:780px;padding:22px;text-align:center;
-  color:#eaeaea;background:var(--panel);
-  border:4px solid #fff;outline:4px solid #000;box-shadow:inset 0 0 0 4px #444,0 12px 0 #000;
-  border-radius:8px;font-family:'Press Start 2P',monospace;pointer-events:auto;
-}
-.title-xxl{ font-size:26px;color:var(--accent);text-shadow:0 3px 0 #000;margin-bottom:10px }
-.sub{ font-size:12px;color:#cacaca;line-height:1.6;margin-bottom:14px }
-
-.start-grid{ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0 }
-.char{
-  display:flex;align-items:center;gap:12px;padding:12px;background:#1f1f1f;border:3px solid #555;border-radius:8px;cursor:pointer;
-  transition:transform .08s ease,border-color .08s ease;
-}
-.char:hover{ transform:translateY(-2px);border-color:#9ad3ff }
-.char-swatch{ width:84px;height:90px;background-size:336px 90px;background-position-x:-84px }
-.swatch-cow{ background-image:url('img/cow-test2.png') }
-.swatch-chicken{ background-image:url('img/chicken-test1.png') }
-.char-name{ font-size:14px;color:#fff }
-.char-desc{ font-size:10px;color:#a8a8a8;margin-top:6px;text-align:left }
-
-.retro-btn{
-  display:inline-block;padding:12px 18px;background:#2b2b2b;color:#fff;border:3px solid #fff;outline:3px solid #000;border-radius:8px;
-  box-shadow:0 6px 0 #000;text-decoration:none;font-family:'Press Start 2P',monospace;font-size:12px;cursor:pointer;
-}
-.retro-btn:hover{ transform:translateY(-1px) }
-.retro-btn:active{ transform:translateY(2px);box-shadow:0 2px 0 #000 }
-
-/* ===== OVERLAYS IN-GAME ===== */
-.overlay--ingame{
-  position:absolute;inset:0;z-index:80;
-  display:none;align-items:center;justify-content:center;
-  background:transparent;pointer-events:none;
-}
-.overlay--ingame.show{ display:flex }
-.life-lost-wrap{ text-align:center; pointer-events:auto; font-family:'Press Start 2P', monospace; }
-.life-lost-msg{
-  color:#fff; font-size:18px; margin-bottom:12px;
-  text-shadow:0 2px 0 #000, 0 0 8px rgba(0,0,0,.35);
-}
-.retro-btn.green{
-  background:#1d7e48; border:3px solid #e7ffe7; outline:3px solid #0e3b24; color:#fff; box-shadow:0 6px 0 #0e3b24;
-}
-.retro-btn.green:hover{ transform:translateY(-1px) }
-.retro-btn.green:active{ transform:translateY(2px); box-shadow:0 2px 0 #0e3b24 }
-
-.go-msg{ color:#ff3b3b;font-size:20px;margin-bottom:12px;text-shadow:0 2px 0 #000, 0 0 10px rgba(255,59,59,.45) }
-.win-msg{ color:#ffe46b;font-size:20px;margin-bottom:12px;text-shadow:0 2px 0 #000, 0 0 10px rgba(255,228,107,.45) }
-
-.level-overlay{ position:absolute;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:transparent; pointer-events:none }
-.level-overlay.show{ display:flex }
-.level-label{ font-family:'Press Start 2P', monospace; font-size:18px; color:#fff; text-shadow:0 2px 0 #000, 0 0 8px rgba(0,0,0,.4) }
-
-/* ===== TORMENTA NIVEL 3 ===== */
-#rainLayer, #lightningLayer{
-  position:absolute;inset:0;pointer-events:none;z-index:5;
-  display:none;
-}
-.level-3 #rainLayer, .level-3 #lightningLayer{ display:block; }
-
-.drop{ position:absolute;top:-20px;width:2px;height:14px;background:rgba(180,200,255,.8);filter:blur(.2px);animation:fall linear infinite }
-@keyframes fall{ to{ transform:translateY(320px) } }
-.flash{ position:absolute;inset:0;background:linear-gradient(#fff,rgba(255,255,255,.6) 40%, rgba(255,255,255,0) 60%);opacity:0;animation:flash 300ms ease-out;mix-blend-mode:screen }
-@keyframes flash{ 0%{opacity:0} 10%{opacity:.9} 40%{opacity:.25} 100%{opacity:0} }
+/* Tormenta */
+#rainLayer,#lightningLayer{position:absolute;inset:0;pointer-events:none;z-index:5;display:none}
+.level-3 #rainLayer,.level-3 #lightningLayer{display:block}
+.drop{position:absolute;top:-20px;width:2px;height:14px;background:rgba(180,200,255,.8);filter:blur(.2px);animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(320px)}}
+.flash{position:absolute;inset:0;background:linear-gradient(#fff,rgba(255,255,255,.6) 40%, rgba(255,255,255,0) 60%);opacity:0;animation:flash 300ms ease-out;mix-blend-mode:screen}
+@keyframes flash{0%{opacity:0}10%{opacity:.9}40%{opacity:.25}100%{opacity:0}}
   </style>
 </head>
 <body>
 
-  <!-- MÚSICA -->
-  <audio id="bgm-level1" preload="auto" loop><source src="./music/fondoMusic.mp3" type="audio/mpeg"></audio>
-  <audio id="bgm-level2" preload="auto" loop><source src="./music/level2.mp3" type="audio/mpeg"></audio>
-  <audio id="bgm-level3" preload="auto" loop><source src="./music/level3.mp3" type="audio/mpeg"></audio>
+  <!-- MÚSICA (con playsinline) -->
+  <audio id="bgm-level1" preload="auto" loop playsinline><source src="./music/fondoMusic.mp3" type="audio/mpeg"></audio>
+  <audio id="bgm-level2" preload="auto" loop playsinline><source src="./music/level2.mp3" type="audio/mpeg"></audio>
+  <audio id="bgm-level3" preload="auto" loop playsinline><source src="./music/level3.mp3" type="audio/mpeg"></audio>
 
   <!-- SFX -->
   <audio id="hit-sfx" preload="auto" playsinline><source src="./music/estrellar.mp3" type="audio/mpeg"></audio>
@@ -295,13 +196,26 @@ const bgmEls = {
 };
 const hitEl= ()=>document.getElementById("hit-sfx");
 
+/* NUEVO: cola de reproducción pendiente (para móviles) */
+let pendingBGM = null;
+
 function playBGM(n, reset=false){
   const target = bgmEls[n] && bgmEls[n]();
   if(!target) return;
   [1,2,3].forEach(k => { const a=bgmEls[k](); if(a && a!==target) a.pause(); });
   if(reset) try{ target.currentTime = 0; }catch(e){}
-  target.play().catch(()=>{});
+  const p = target.play();
+  if(p && typeof p.catch === 'function'){
+    p.catch(()=>{ pendingBGM = { n, reset:true }; });
+  }
 }
+function tryPlayPendingBGM(){
+  if(!pendingBGM) return;
+  const n = pendingBGM.n, reset = pendingBGM.reset;
+  pendingBGM = null;
+  playBGM(n, reset);
+}
+
 function pauseCurrentBGM(){ const a=bgmEls[level] && bgmEls[level](); if(a) a.pause(); }
 function stopAllBGM(){ [1,2,3].forEach(k=>{ const a=bgmEls[k](); if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } }); }
 
@@ -311,16 +225,11 @@ let lightningTimer=null;
 /* ===== HELPERS DE INPUT PARA BOTONES ===== */
 function bindInteractive(el, handler){
   if(!el) return;
-  // click/pointer/touch
   el.addEventListener('click', (e)=>{e.preventDefault(); handler(e);});
   el.addEventListener('pointerdown', (e)=>{e.preventDefault(); handler(e);}, {passive:false});
   el.addEventListener('touchstart', (e)=>{e.preventDefault(); handler(e);}, {passive:false});
-  // teclado (Space / Enter)
   el.addEventListener('keydown', (e)=>{
-    if(e.code==='Space' || e.code==='Enter'){
-      e.preventDefault();
-      handler(e);
-    }
+    if(e.code==='Space' || e.code==='Enter'){ e.preventDefault(); handler(e); }
   });
 }
 
@@ -342,23 +251,18 @@ function init(){
   rainLayer=document.getElementById("rainLayer");
   lightningLayer=document.getElementById("lightningLayer");
 
-  // Portada (tarjetas + botón)
   const grid=document.getElementById('charGrid');
   grid.querySelectorAll('.char').forEach(card=>{
     bindInteractive(card, ()=> startGame(card.getAttribute('data-animal')||'cow'));
   });
   bindInteractive(document.getElementById("startDefault"), ()=> startGame('cow'));
 
-  // Modales
   bindInteractive(document.getElementById("retryBtn"), resumeAfterDeath);
   bindInteractive(document.getElementById("backToStart"), backToStart);
   bindInteractive(document.getElementById("backToStartWin"), backToStart);
 
-  // === CONTROLES DE JUEGO (ROBUSTOS) ===
-  // pointerdown/touchstart en toda la ventana para salto
   window.addEventListener("pointerdown", onPress, {passive:true});
   window.addEventListener("touchstart", onPress, {passive:true});
-  // teclado en captura para ignorar el foco
   window.addEventListener("keydown", onKeyDown, true);
 
   loadHitBuffer();
@@ -386,7 +290,7 @@ function loadHitBuffer(){
       .then(r=>r.arrayBuffer())
       .then(b=>audioCtx.decodeAudioData(b))
       .then(decoded=>{ hitBuffer = decoded; })
-      .catch(()=>{ /* fallback al <audio> */ });
+      .catch(()=>{});
   }catch(e){}
 }
 function playHit(){
@@ -421,12 +325,13 @@ function startGame(animal='cow'){
   level=1;
   levelSpeedFactor=1;
   contenedor.classList.remove('level-2','level-3','mediodia','tarde','noche');
+  document.getElementById('ufoLayer').style.display='none'; // iniciar escondida
   stopStorm();
   resetAll(true);
   applyCharacter();
   hideStart();
   showLevelBanner('NIVEL 1');
-  playBGM(1, /*reset*/true);
+  playBGM(1, true);
 }
 
 function backToStart(){
@@ -446,7 +351,6 @@ function showStart(){
 
 function hideStart(){
   startOverlay.classList.remove("show");
-  // Para que Space/Enter no sigan sobre el botón oculto
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
 }
 
@@ -480,7 +384,6 @@ function Update(){
   detectarColision();
   velY -= gravedad * deltaTime;
 
-  // Cambios de nivel con score NO acumulable
   if(level===1 && score>=70){ toLevel2(); }
   else if(level===2 && score>=110){ toLevel3(); }
   else if(level===3 && score>=150){ onWin(); }
@@ -489,17 +392,20 @@ function Update(){
 /* ===== INPUT ===== */
 function onPress(){
   primeAudioOnce();
+  // si hay una BGM pendiente (iOS), lanzarla ahora
+  tryPlayPendingBGM();
+
   if(startOverlay.classList.contains("show")) return;
   if(lifeLostOverlay.classList.contains("show")){ resumeAfterDeath(); return; }
   if(gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show")){ backToStart(); return; }
   if(levelOverlay.classList.contains("show")) return;
-  playBGM(level, /*reset*/false);
+
+  playBGM(level, false);
   saltar();
 }
 function onKeyDown(e){
   const isSpace = e.code==="Space" || e.key===" " || e.keyCode===32;
   const isArrowUp = e.code==="ArrowUp" || e.keyCode===38;
-  // desde portada, Enter/Space también inician
   if(startOverlay.classList.contains('show') && (e.code==='Enter'||isSpace)){
     e.preventDefault(); startGame('cow'); return;
   }
@@ -510,33 +416,14 @@ function onKeyDown(e){
 }
 
 /* ===== FÍSICA ===== */
-function saltar(){
-  if(dinoPosY===sueloY){ saltando=true; velY=impulso; dino.classList.remove("dino-corriendo"); }
-}
-function moverDinosaurio(){
-  dinoPosY += velY * deltaTime;
-  if(dinoPosY<sueloY) tocarSuelo();
-  dino.style.bottom = dinoPosY + "px";
-}
-function tocarSuelo(){
-  dinoPosY=sueloY; velY=0;
-  if(saltando) dino.classList.add("dino-corriendo");
-  saltando=false;
-}
-function moverSuelo(){
-  sueloX += velEscenarioBase * deltaTime * gameVel;
-  suelo.style.left = -(sueloX % contenedor.clientWidth) + "px";
-}
+function saltar(){ if(dinoPosY===sueloY){ saltando=true; velY=impulso; dino.classList.remove("dino-corriendo"); } }
+function moverDinosaurio(){ dinoPosY += velY * deltaTime; if(dinoPosY<sueloY) tocarSuelo(); dino.style.bottom = dinoPosY + "px"; }
+function tocarSuelo(){ dinoPosY=sueloY; velY=0; if(saltando) dino.classList.add("dino-corriendo"); saltando=false; }
+function moverSuelo(){ sueloX += velEscenarioBase * deltaTime * gameVel; suelo.style.left = -(sueloX % contenedor.clientWidth) + "px"; }
 
 /* ===== SPAWN ===== */
-function decidirCrearObstaculos(){
-  tiempoHastaObstaculo -= deltaTime;
-  if(tiempoHastaObstaculo<=0) crearObstaculo();
-}
-function decidirCrearNubes(){
-  tiempoNubeVar -= deltaTime;
-  if(tiempoNubeVar<=0) crearNube();
-}
+function decidirCrearObstaculos(){ tiempoHastaObstaculo -= deltaTime; if(tiempoHastaObstaculo<=0) crearObstaculo(); }
+function decidirCrearNubes(){ tiempoNubeVar -= deltaTime; if(tiempoNubeVar<=0) crearNube(); }
 function crearObstaculo(){
   const o=document.createElement("div");
   contenedor.appendChild(o);
@@ -583,7 +470,6 @@ function moverNubes(){
 /* ===== SCORE / DIFICULTAD ===== */
 function ganarPuntos(){
   score++; textoScore.textContent = String(score).padStart(3,'0');
-
   if(level===1){
     if(score===5){ gameVel=1.5*levelSpeedFactor; contenedor.classList.add("mediodia"); }
     else if(score===10){ gameVel=2*levelSpeedFactor; contenedor.classList.add("tarde"); }
@@ -603,10 +489,8 @@ function onDeath(){
   dino.classList.remove("dino-corriendo");
   dino.classList.add("dino-estrellado");
   parado = true;
-
   playHit();
   pauseCurrentBGM();
-
   lives--; renderLives();
   if(lives<=0){ showGameOver(); }
   else{ lifeLostOverlay.classList.add("show"); }
@@ -618,7 +502,7 @@ function resumeAfterDeath(){
   dino.classList.remove("dino-estrellado");
   dino.classList.add("dino-corriendo");
   dinoPosY=sueloY; velY=0; parado=false;
-  playBGM(level, /*reset*/false);
+  playBGM(level, false);
 }
 function showGameOver(){ gameOverOverlay.classList.add("show"); stopAllBGM(); }
 function onWin(){ winOverlay.classList.add('show'); parado=true; stopAllBGM(); }
@@ -650,12 +534,19 @@ function toLevel2(){
   levelSpeedFactor = 1.6;
   contenedor.classList.add('level-2');
   contenedor.classList.remove('mediodia','tarde','noche');
+
+  // Mostrar y reiniciar UFO de forma confiable
+  const ufoLayer=document.getElementById('ufoLayer');
+  ufoLayer.style.display='block';
+  const ufoImg = ufoLayer.querySelector('img');
+  if(ufoImg){ ufoImg.src = 'img/ufo2.gif?t=' + Date.now(); }
+
   stopStorm();
   resetAll(false);
   score = 0; textoScore.textContent = "000";
   gameVel = 1.8 * levelSpeedFactor;
   showLevelBanner('NIVEL 2');
-  playBGM(2, /*reset*/true);
+  playBGM(2, true); // si falla, quedará pendiente y se lanzará en el próximo tap
 }
 
 function toLevel3(){
@@ -663,16 +554,21 @@ function toLevel3(){
   levelSpeedFactor = 2.0;
 
   contenedor.classList.add('level-3');
-  contenedor.classList.remove('level-2');  
+  contenedor.classList.remove('level-2');
+
+  // Ocultar UFO al pasar a nivel 3
+  document.getElementById('ufoLayer').style.display='none';
+
   startStorm();
   resetAll(false);
   score = 0; textoScore.textContent = "000";
   gameVel = 2.2 * levelSpeedFactor;
   showLevelBanner('NIVEL 3');
-  playBGM(3, /*reset*/true);
+  playBGM(3, true); // idem: se reintenta en el siguiente gesto
 }
 
 /* ===== TORMENTA ===== */
+let lightningTimer=null;
 function startStorm(){
   rainLayer.innerHTML='';
   const W = contenedor.clientWidth;
