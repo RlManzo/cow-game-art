@@ -89,6 +89,11 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
   overflow: hidden;
   touch-action: manipulation;
 }
+#game {
+  max-width: 100vw;
+  max-height: 100vh;
+  transform-origin: top left;
+}
 /* Escalaremos el juego desde la esquina sup-izq para ser precisos */
 .contenedor{
   transform-origin: top left;
@@ -275,9 +280,15 @@ const BASE_W = 920, BASE_H = 280;
 function fitToScreen(){
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const scale = Math.min(w / BASE_W, h / BASE_H);
+  // ahora escalamos para ocupar todo el ancho disponible
+  const scale = w / BASE_W;
   const game  = document.getElementById('game');
-  if(game){ game.style.transform = `scale(${scale})`; }
+  if(game){ 
+    game.style.transform = `scale(${scale})`;
+    // centramos verticalmente
+    const offsetY = (h - BASE_H * scale) / 2;
+    game.style.marginTop = `${offsetY}px`;
+  }
 }
 window.addEventListener('resize', fitToScreen);
 window.addEventListener('orientationchange', ()=>setTimeout(fitToScreen, 50));
