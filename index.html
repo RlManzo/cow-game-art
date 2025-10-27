@@ -10,32 +10,11 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
   <style>
-/* === TUS ESTILOS (base) === */
+/* === TUS ESTILOS (sin cambios visuales) === */
 :root{--accent:#ffd66b;--panel:#121212;--heart-img:url('img/corazones.png')}
 *{margin:0;padding:0;box-sizing:border-box}
-body{height:100vh;background:#584040;display:flex;align-items:center;justify-content:center;overflow:hidden}
-
-/* Stage: ocupa TODO el viewport y recorta si sobra (cover) */
-#stage{
-  position:fixed; inset:0;
-  width:100vw; height:100vh;
-  overflow:hidden; /* recorta como portada */
-  display:flex; align-items:center; justify-content:center;
-  background:#584040; /* mismo fondo de body */
-}
-
-/* Contenedor base (tamaño de diseño 920x280), luego se escala con transform */
-.contenedor{
-  width:920px; height:280px;
-  position:relative; overflow:hidden; border-radius:12px;
-  background:linear-gradient(#b7d6c7,transparent) #ffe2d1;
-  transition:background-color 1s linear, background 1s linear;
-  box-shadow:0 20px 40px rgba(0,0,0,.35);
-  image-rendering:pixelated;
-  transform-origin:center center; /* importante para centrar al escalar */
-}
-
-/* HUD / Mundo / etc (sin cambios visuales) */
+body{height:100vh;background:#584040;display:flex;align-items:center;justify-content:center}
+.contenedor{width:920px;height:280px;position:relative;overflow:hidden;border-radius:12px;background:linear-gradient(#b7d6c7,transparent) #ffe2d1;transition:background-color 1s linear, background 1s linear;box-shadow:0 20px 40px rgba(0,0,0,.35);image-rendering:pixelated}
 .mediodia{background-color:#ffdcf3}.tarde{background-color:#ffadad}.noche{background-color:#aca8c7}
 .level-2{background:#000 !important}.level-3{background:#000 !important}
 .score{position:absolute;top:10px;right:14px;z-index:20;color:#d48871;font:700 18px 'Press Start 2P',monospace}
@@ -59,12 +38,12 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 @keyframes ufoMove{0%{transform:translateX(-220px)}50%{transform:translateX(980px)}100%{transform:translateX(-220px)}}
 @keyframes ufoBob{0%,100%{top:22px}50%{top:28px}}
 
-/* Overlays (portada ocupa toda pantalla) */
+/* Overlays */
 .overlay{position:fixed;inset:0;width:100vw;height:100dvh;z-index:99999;display:none;align-items:center;justify-content:center;background:#0b0b0d}
 .overlay.show{display:flex}
 .overlay::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 2px, transparent 2px, transparent 4px)}
 .panel{position:relative;z-index:2;width:92%;max-width:780px;padding:22px;text-align:center;color:#eaeaea;background:var(--panel);border:4px solid #fff;outline:4px solid #000;box-shadow:inset 0 0 0 4px #444,0 12px 0 #000;border-radius:8px;font-family:'Press Start 2P',monospace;pointer-events:auto}
-.title-xxl{font-size:26px;color:var(--accent);text-shadow:0 3px 0 #000;margin-bottom:10px}
+.title-xxl{font-size:26px;color:--accent;text-shadow:0 3px 0 #000;margin-bottom:10px}
 .sub{font-size:12px;color:#cacaca;line-height:1.6;margin-bottom:14px}
 .start-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0}
 .char{display:flex;align-items:center;gap:12px;padding:12px;background:#1f1f1f;border:3px solid #555;border-radius:8px;cursor:pointer;transition:transform .08s ease,border-color .08s ease}
@@ -108,60 +87,60 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
     <source src="./music/estrellar.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Juego escalable a pantalla completa -->
-  <div id="stage">
-    <div class="contenedor" id="game">
-      <div class="lives" id="lives"></div>
-      <div class="score" id="score">000</div>
+  <!-- Juego -->
+  <div class="contenedor" id="game">
+    
+    <div class="lives" id="lives"></div>
+    <div class="score" id="score">000</div>
 
-      <div class="suelo"></div>
-      <div class="dino cow dino-corriendo" id="player"></div>
+    <div class="suelo"></div>
+    <div class="dino cow dino-corriendo" id="player"></div>
 
-      <div id="ufoLayer"><img src="img/ufo2.gif" alt="UFO"></div>
+    <div id="ufoLayer"><img src="img/ufo2.gif" alt="UFO"></div>
 
-      <div id="rainLayer"></div>
-      <div id="lightningLayer"></div>
+    <div id="rainLayer"></div>
+    <div id="lightningLayer"></div>
 
-      <div class="overlay--ingame" id="lifeLostOverlay">
-        <div class="life-lost-wrap">
-          <div class="life-lost-msg">¡NO PUDISTE SALVARLA!</div>
-          <button class="retro-btn green" id="retryBtn">REINTENTAR</button>
-        </div>
+    <div class="overlay--ingame" id="lifeLostOverlay">
+      <div class="life-lost-wrap">
+        <div class="life-lost-msg">¡NO PUDISTE SALVARLA!</div>
+        <button class="retro-btn green" id="retryBtn">REINTENTAR</button>
       </div>
+    </div>
 
-      <div class="overlay--ingame" id="gameOverOverlay">
-        <div class="life-lost-wrap">
-          <div class="go-msg">GAME OVER</div>
-          <button class="retro-btn green" id="backToStart">VOLVER AL INICIO</button>
-        </div>
+    <div class="overlay--ingame" id="gameOverOverlay">
+      <div class="life-lost-wrap">
+        <div class="go-msg">GAME OVER</div>
+        <button class="retro-btn green" id="backToStart">VOLVER AL INICIO</button>
       </div>
+    </div>
 
-      <div class="overlay--ingame" id="winOverlay">
-        <div class="life-lost-wrap">
-          <div class="win-msg">¡GANASTE!</div>
-          <button class="retro-btn green" id="backToStartWin">VOLVER AL INICIO</button>
-        </div>
+    <div class="overlay--ingame" id="winOverlay">
+      <div class="life-lost-wrap">
+        <div class="win-msg">¡GANASTE!</div>
+        <button class="retro-btn green" id="backToStartWin">VOLVER AL INICIO</button>
       </div>
+    </div>
 
-      <div class="level-overlay" id="levelOverlay">
-        <div class="level-label" id="levelLabel">NIVEL 1</div>
-      </div>
+    <div class="level-overlay" id="levelOverlay">
+      <div class="level-label" id="levelLabel">NIVEL 1</div>
     </div>
   </div>
 
-  <!-- Portada a pantalla completa -->
   <div class="overlay show" id="startOverlay" aria-hidden="false">
     <div class="panel">
       <div class="title-xxl" style="color: yellow !important;">SAVE THE ANIMAL</div>
       <div class="sub">Elegí tu personaje. Saltá con <b>clic</b>, <b>toque</b>, <b>Espacio</b> o <b>↑</b>. Tenés <b>3 vidas</b>.</div>
       <div class="start-grid" id="charGrid">
         <div class="char" data-animal="cow" tabindex="0" role="button" aria-label="Elegir vaca">
+        
           <div>
             <div class="char-name">🐄 VACA</div>
             <div class="char-desc">Sprite original, paso firme </div>
           </div>
         </div>
         <div class="char" data-animal="chicken" tabindex="0" role="button" aria-label="Elegir gallina">
+          
           <div>
             <div class="char-name">🐔 GALLINA</div>
             <div class="char-desc">Ligera y saltarina </div>
@@ -176,7 +155,6 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 /* ===== STATE / CONST ===== */
 let time=new Date(), deltaTime=0;
 
-const BASE_W=920, BASE_H=280; /* tamaño de diseño */
 const sueloY=22, impulso=900, gravedad=2500;
 let velY=0, dinoPosY=sueloY;
 
@@ -203,7 +181,7 @@ let levelSpeedFactor=1;
 let contenedor,dino,textoScore,suelo,startOverlay,lifeLostOverlay,gameOverOverlay,winOverlay,livesHud;
 let levelOverlay,levelLabel, rainLayer, lightningLayer;
 
-/* ===== AUDIO: BGM con <audio> ===== */
+/* ===== AUDIO: BGM con <audio> (compatible iOS) ===== */
 const BGM_SRC = { 1:'./music/fondoMusic.mp3', 2:'./music/level2.mp3', 3:'./music/level3.mp3' };
 const bgm = ()=>document.getElementById('bgm');
 let audioUnlocked=false;
@@ -212,37 +190,50 @@ let pendingBGM=null;
 function setBgmSrcForLevel(lvl){
   const a = bgm();
   const want = BGM_SRC[lvl];
+  // sólo cambiamos src si es distinto
   if(!a.src || !a.src.includes(want)){
     a.src = want;
+    // iOS: load explícito cuando cambia la pista
     try{ a.load(); }catch(e){}
   }
 }
+
 function playBGM(lvl,{reset=false, fromGesture=false}={}){
   const a = bgm(); if(!a) return;
   setBgmSrcForLevel(lvl);
   if(reset){ try{ a.currentTime=0; }catch(e){} }
   const p = a.play();
   if(p && typeof p.catch==='function'){
-    p.catch(()=>{ if(!fromGesture) pendingBGM = {lvl, reset:true}; });
+    p.catch(()=>{
+      // Si no fue desde gesto, la encolamos para el próximo tap
+      if(!fromGesture) pendingBGM = {lvl, reset:true};
+    });
   }
 }
+
 function tryPlayPendingBGM(){
   if(!pendingBGM) return;
   const {lvl, reset} = pendingBGM;
   pendingBGM = null;
   playBGM(lvl,{reset, fromGesture:true});
 }
+
+/* “Desbloqueo” rápido (pulso inaudible con el mismo <audio>) */
 function unlockAudioNow(){
   if(audioUnlocked) return;
   const a = bgm(); if(!a) return;
+  // Truco seguro: reproducir 1 frame en mute y parar, dentro del gesto
   try{
     a.muted = true;
+    // si no hay src aún, usa la del nivel 1 para priming
     if(!a.src) setBgmSrcForLevel(1);
     const p = a.play();
     if(p && typeof p.then==='function'){
       p.then(()=>{
-        a.pause(); try{ a.currentTime=0; }catch(e){}
-        a.muted=false; audioUnlocked=true;
+        a.pause();
+        try{ a.currentTime = 0; }catch(e){}
+        a.muted = false;
+        audioUnlocked = true;
       }).catch(()=>{ a.muted=false; });
     }else{
       a.pause(); a.muted=false; audioUnlocked=true;
@@ -258,25 +249,6 @@ function bindInteractive(el, handler){
   el.addEventListener('touchstart', (e)=>{e.preventDefault(); handler(e);}, {passive:false});
   el.addEventListener('keydown', (e)=>{ if(e.code==='Space'||e.code==='Enter'){ e.preventDefault(); handler(e); }});
 }
-
-/* ===== ESCALADO “COVER” AL VIEWPORT ===== */
-function fitCover(){
-  const stageW = window.innerWidth, stageH = window.innerHeight;
-  // cover: llenar al menos una dimensión sin deformar
-  const scale = Math.max(stageW/BASE_W, stageH/BASE_H);
-  const game = document.getElementById('game');
-  if(!game) return;
-  game.style.transform = `scale(${scale})`;
-  // centrar
-  const finalW = BASE_W*scale, finalH = BASE_H*scale;
-  const offsetX = (stageW - finalW)/2;
-  const offsetY = (stageH - finalH)/2;
-  game.style.position = 'absolute';
-  game.style.left = `${offsetX}px`;
-  game.style.top  = `${offsetY}px`;
-}
-window.addEventListener('resize', fitCover);
-window.addEventListener('orientationchange', ()=>setTimeout(fitCover, 50));
 
 /* ===== BOOT ===== */
 if(document.readyState==="complete"||document.readyState==="interactive"){setTimeout(init,1)} else {document.addEventListener("DOMContentLoaded",init)}
@@ -296,10 +268,6 @@ function init(){
   rainLayer=document.getElementById("rainLayer");
   lightningLayer=document.getElementById("lightningLayer");
 
-  // Escalado inicial
-  fitCover();
-
-  // Portada / botones
   const grid=document.getElementById('charGrid');
   grid.querySelectorAll('.char').forEach(card=>{
     bindInteractive(card, ()=> startGame(card.getAttribute('data-animal')||'cow'));
@@ -310,7 +278,7 @@ function init(){
   bindInteractive(document.getElementById("backToStart"), backToStart);
   bindInteractive(document.getElementById("backToStartWin"), backToStart);
 
-  // Tap global: reintenta BGM si quedó pendiente y también acción de juego
+  // Tap global: útil para reintentar BGM si quedó pendiente
   window.addEventListener("pointerdown", ()=>{ tryPlayPendingBGM(); onPress(); }, {passive:true});
   window.addEventListener("touchstart",  ()=>{ tryPlayPendingBGM(); onPress(); }, {passive:true});
   window.addEventListener("keydown", onKeyDown, true);
@@ -326,8 +294,9 @@ function Loop(){
 
 /* ===== FLUJO ===== */
 function startGame(animal='cow'){
-  // desbloqueo + música nivel 1 en el mismo gesto
+  // 1) Desbloquea audio en el MISMO gesto del botón START
   unlockAudioNow();
+  // 2) Arranca música del nivel 1 EN ESE MISMO gesto
   playBGM(1,{reset:true, fromGesture:true});
 
   selectedAnimal=animal;
@@ -493,6 +462,7 @@ function onDeath(){
   dino.classList.remove("dino-corriendo");
   dino.classList.add("dino-estrellado");
   parado = true;
+  // SFX simple con <audio> del DOM
   const s=document.getElementById('hit-sfx'); if(s){ s.currentTime=0; s.play().catch(()=>{}); }
   lives--; renderLives();
   if(lives<=0){ showGameOver(); }
@@ -505,6 +475,7 @@ function resumeAfterDeath(){
   dino.classList.remove("dino-estrellado");
   dino.classList.add("dino-corriendo");
   dinoPosY=sueloY; velY=0; parado=false;
+  // si por algún motivo quedó pausada:
   const a=bgm(); if(a && a.paused){ playBGM(level,{reset:false}); }
 }
 function showGameOver(){ gameOverOverlay.classList.add("show"); }
@@ -545,6 +516,8 @@ function toLevel2(){
   score = 0; textoScore.textContent = "000";
   gameVel = 1.8 * levelSpeedFactor;
   showLevelBanner('NIVEL 2');
+
+  // Cambiamos pista y reproducimos (ya desbloqueado por START)
   playBGM(2,{reset:true});
 }
 
@@ -562,6 +535,7 @@ function toLevel3(){
   score = 0; textoScore.textContent = "000";
   gameVel = 2.2 * levelSpeedFactor;
   showLevelBanner('NIVEL 3');
+
   playBGM(3,{reset:true});
 }
 
