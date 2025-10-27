@@ -10,7 +10,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
   <style>
-/* ... (tus estilos iguales, sin cambios) ... */
 :root{--accent:#ffd66b;--panel:#121212;--heart-img:url('img/corazones.png')}
 *{margin:0;padding:0;box-sizing:border-box}
 body{height:100vh;background:#584040;display:flex;align-items:center;justify-content:center}
@@ -78,9 +77,6 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
   </style>
 </head>
 <body>
-
-  <!-- MÚSICA: un solo elemento -->
-  <audio id="bgm" preload="auto" loop playsinline></audio>
 
   <!-- SFX -->
   <audio id="hit-sfx" preload="auto" playsinline><source src="./music/estrellar.mp3" type="audio/mpeg"></audio>
@@ -185,100 +181,90 @@ let levelSpeedFactor=1;
 let contenedor,dino,textoScore,suelo,startOverlay,lifeLostOverlay,gameOverOverlay,winOverlay,livesHud;
 let levelOverlay,levelLabel, rainLayer, lightningLayer;
 
-/* ===== AUDIO ===== */
-let audioCtx=null, hitBuffer=null, sfxPrimed=false;
-const hitEl= ()=>document.getElementById("hit-sfx");
+/* ===== AUDIO (WebAudio) ===== */
+let audioCtx=null, hitBuffer=null, sfxPrimed=false, audioUnlocked=false;
 
-/* BGM por nivel (un solo <audio id="bgm">) */
+function ensureAudioCtx(){
+  if(!audioCtx){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new Ctx();
+  }
+  return audioCtx;
+}
+
+/* --- BGM manager --- */
 const BGM_SRC = { 1:'./music/fondoMusic.mp3', 2:'./music/level2.mp3', 3:'./music/level3.mp3' };
-const bgmEl = () => document.getElementById('bgm');
+const BGM = {
+  buffers: new Map(),
+  currentLevel: null,
+  source: null,
+  gain: null,
 
-let currentBGMLevel = null;   // pista actual sonando
-let pendingBGMLevel = null;   // para iOS: nivel pendiente si play() fue bloqueado
-let pendingReset = false;     // si el pendiente requiere reset
-let audioUnlocked = false;    // iOS: ya habilitamos el elemento con un gesto
+  async load(level){
+    if(this.buffers.has(level)) return this.buffers.get(level);
+    const res = await fetch(BGM_SRC[level]);
+    const arr = await res.arrayBuffer();
+    const buf = await ensureAudioCtx().decodeAudioData(arr);
+    this.buffers.set(level, buf);
+    return buf;
+  },
 
-function playBGM(nivel, reset=false){
-  const a = bgmEl();
-  if(!a) return;
-  const want = BGM_SRC[nivel];
-  const switchingTrack = (currentBGMLevel !== nivel) || !a.src || !a.src.includes(want);
+  stop(){
+    if(this.source){ try{ this.source.stop(0); }catch(e){} try{ this.source.disconnect(); }catch(e){} this.source=null; }
+    if(this.gain){ try{ this.gain.disconnect(); }catch(e){} this.gain=null; }
+  },
 
-  if (switchingTrack) {
-    a.pause();
-    a.src = want;
-    a.load();                 // importante en iOS
-    currentBGMLevel = nivel;
-    if (reset) { try{ a.currentTime = 0; }catch(e){} }
-  } else {
-    // misma pista: si ya suena, no hagas nada
-    if (!a.paused && !a.ended) return;
-    if (reset) { try{ a.currentTime = 0; }catch(e){} }
+  async play(level, reset=false){
+    const ctx = ensureAudioCtx();
+    if(ctx.state === 'suspended'){ try{ await ctx.resume(); }catch(e){} }
+
+    if(this.currentLevel===level && this.source && !reset) return;
+
+    const buf = await this.load(level);
+    this.stop();
+
+    this.gain = ctx.createGain();
+    this.gain.gain.value = 1;
+
+    this.source = ctx.createBufferSource();
+    this.source.buffer = buf;
+    this.source.loop = true;
+    this.source.connect(this.gain).connect(ctx.destination);
+    this.source.start(0);
+
+    this.currentLevel = level;
   }
+};
 
-  const p = a.play();
-  if (p && typeof p.catch === 'function') {
-    p.catch(()=>{
-      // si falla (iOS sin gesto), queda pendiente y la tomamos en el próximo tap real
-      pendingBGMLevel = nivel;
-      pendingReset = switchingTrack ? reset : false;
-    });
+/* SFX */
+const hitEl= ()=>document.getElementById("hit-sfx");
+async function loadHitBuffer(){
+  try{
+    const r = await fetch('./music/estrellar.mp3');
+    const b = await r.arrayBuffer();
+    hitBuffer = await ensureAudioCtx().decodeAudioData(b);
+  }catch(e){}
+}
+function playHit(){
+  if(hitBuffer && audioCtx){
+    try{
+      const src = audioCtx.createBufferSource();
+      src.buffer = hitBuffer;
+      src.connect(audioCtx.destination);
+      src.start(0);
+      return;
+    }catch(e){}
   }
+  const s = hitEl(); if(s){ s.currentTime=0; s.play().catch(()=>{}); }
 }
 
-function ensureUnlockedAndPlay(nivel, reset=false){
-  const a = bgmEl();
-  if(!a) return;
-
-  // Si aún no desbloqueamos el audio en iOS, hacemos un play silencioso (muted) y después desmutamos.
-  if(!audioUnlocked){
-    const want = BGM_SRC[nivel];
-    if (!a.src || !a.src.includes(want)) { a.src = want; a.load(); currentBGMLevel = nivel; }
-    if (reset) { try{ a.currentTime = 0; }catch(e){} }
-
-    a.muted = true;
-    const p = a.play();
-    if(p && typeof p.then === 'function'){
-      p.then(()=>{
-        a.muted = false;
-        audioUnlocked = true;
-      }).catch(()=>{
-        // Si aún así falla, quedará pendiente para el siguiente tap
-        pendingBGMLevel = nivel;
-        pendingReset = reset;
-      });
-    }
-    return;
-  }
-
-  // Si ya está desbloqueado, reproducimos normal (con la lógica de cambio de pista)
-  playBGM(nivel, reset);
-}
-
-function tryPlayPendingBGM(){
-  if(!pendingBGMLevel) return;
-  const lvl = pendingBGMLevel, r = pendingReset;
-  pendingBGMLevel = null; pendingReset = false;
-  playBGM(lvl, r);
-}
-function pauseCurrentBGM(){ const a=bgmEl(); if(a) a.pause(); }
-function stopAllBGM(){
-  const a=bgmEl();
-  if(a){
-    a.pause();
-    try{ a.currentTime = 0; }catch(e){}
-  }
-}
-
-/* ===== HELPERS DE INPUT PARA BOTONES ===== */
+/* ===== INPUT HELPERS ===== */
 function bindInteractive(el, handler){
   if(!el) return;
   el.addEventListener('click', (e)=>{e.preventDefault(); handler(e);});
   el.addEventListener('pointerdown', (e)=>{e.preventDefault(); handler(e);}, {passive:false});
   el.addEventListener('touchstart', (e)=>{e.preventDefault(); handler(e);}, {passive:false});
-  el.addEventListener('keydown', (e)=>{
-    if(e.code==='Space' || e.code==='Enter'){ e.preventDefault(); handler(e); }
-  });
+  el.addEventListener('keydown', (e)=>{ if(e.code==='Space'||e.code==='Enter'){ e.preventDefault(); handler(e); }});
 }
 
 /* ===== BOOT ===== */
@@ -323,70 +309,33 @@ function Loop(){
   requestAnimationFrame(Loop);
 }
 
-/* ===== AUDIO (Web Audio para SFX) ===== */
-function ensureAudioCtx(){
-  if(!audioCtx){
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new Ctx();
-  }
-  return audioCtx;
-}
-function loadHitBuffer(){
+/* ===== FLUJO ===== */
+function unlockAudioGesture(){
+  if(audioUnlocked) return;
   try{
-    ensureAudioCtx();
-    fetch('./music/estrellar.mp3')
-      .then(r=>r.arrayBuffer())
-      .then(b=>audioCtx.decodeAudioData(b))
-      .then(decoded=>{ hitBuffer = decoded; })
-      .catch(()=>{});
+    ensureAudioCtx().resume().then(()=>{ audioUnlocked=true; }).catch(()=>{});
   }catch(e){}
 }
-function playHit(){
-  if(hitBuffer && audioCtx && audioCtx.state!=="suspended"){
-    try{
-      const src = audioCtx.createBufferSource();
-      src.buffer = hitBuffer;
-      src.connect(audioCtx.destination);
-      src.start(0);
-      return;
-    }catch(e){}
-  }
-  const s = hitEl();
-  if(s){ s.currentTime=0; s.play().catch(()=>{}); }
-}
-function primeAudioOnce(){
-  if(sfxPrimed) return;
-  sfxPrimed = true;
-  try{ ensureAudioCtx().resume(); }catch(e){}
-  // “primear” el BGM y el SFX
-  [bgmEl(), hitEl()].forEach(a=>{
-    if(!a) return;
-    try{
-      a.muted=true;
-      a.play().then(()=>{ a.pause(); a.currentTime=0; a.muted=false; }).catch(()=>{});
-    }catch(e){}
-  });
-}
 
-/* ===== FLUJO ===== */
 function startGame(animal='cow'){
+  unlockAudioGesture();
+
   selectedAnimal=animal;
   level=1;
   levelSpeedFactor=1;
   contenedor.classList.remove('level-2','level-3','mediodia','tarde','noche');
-  document.getElementById('ufoLayer').style.display='none'; // iniciar escondida
+  document.getElementById('ufoLayer').style.display='none';
   stopStorm();
   resetAll(true);
   applyCharacter();
   hideStart();
   showLevelBanner('NIVEL 1');
 
-  // Primer gesto del usuario: desbloquea y reproduce nivel 1 sin bloqueos de iOS
-  ensureUnlockedAndPlay(1, true);
+  BGM.play(1, true);
 }
 
 function backToStart(){
-  stopAllBGM();
+  BGM.stop();
   showStart();
 }
 
@@ -442,22 +391,14 @@ function Update(){
 
 /* ===== INPUT ===== */
 function onPress(){
-  primeAudioOnce();
-
-  // iOS: si había un play pendiente por bloqueo, ejecútalo ahora
-  tryPlayPendingBGM();
+  unlockAudioGesture();
 
   if(startOverlay.classList.contains("show")) return;
   if(lifeLostOverlay.classList.contains("show")){ resumeAfterDeath(); return; }
   if(gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show")){ backToStart(); return; }
   if(levelOverlay.classList.contains("show")) return;
 
-  // Si ya desbloqueamos audio y la pista del nivel actual no suena, arráncala
-  const a = bgmEl();
-  if (audioUnlocked && !(a && !a.paused)) {
-    playBGM(level, /*reset*/false);
-  }
-
+  if(!BGM.source) BGM.play(level, false);
   saltar();
 }
 function onKeyDown(e){
@@ -547,7 +488,8 @@ function onDeath(){
   dino.classList.add("dino-estrellado");
   parado = true;
   playHit();
-  pauseCurrentBGM();
+  // Si quieres pausar BGM aquí, descomenta:
+  // BGM.stop();
   lives--; renderLives();
   if(lives<=0){ showGameOver(); }
   else{ lifeLostOverlay.classList.add("show"); }
@@ -559,10 +501,10 @@ function resumeAfterDeath(){
   dino.classList.remove("dino-estrellado");
   dino.classList.add("dino-corriendo");
   dinoPosY=sueloY; velY=0; parado=false;
-  playBGM(level, false);
+  BGM.play(level, false);
 }
-function showGameOver(){ gameOverOverlay.classList.add("show"); stopAllBGM(); }
-function onWin(){ winOverlay.classList.add('show'); parado=true; stopAllBGM(); }
+function showGameOver(){ gameOverOverlay.classList.add("show"); /*BGM.stop();*/ }
+function onWin(){ winOverlay.classList.add('show'); parado=true; /*BGM.stop();*/ }
 
 function renderLives(){
   livesHud.innerHTML="";
@@ -592,7 +534,6 @@ function toLevel2(){
   contenedor.classList.add('level-2');
   contenedor.classList.remove('mediodia','tarde','noche');
 
-  // Mostrar y reiniciar UFO de forma confiable
   const ufoLayer=document.getElementById('ufoLayer');
   ufoLayer.style.display='block';
   const ufoImg = ufoLayer.querySelector('img');
@@ -604,8 +545,7 @@ function toLevel2(){
   gameVel = 1.8 * levelSpeedFactor;
   showLevelBanner('NIVEL 2');
 
-  // Cambio de pista ocurre aquí. En iOS, si se bloquea, se aplicará en el próximo tap (pendingBGMLevel).
-  playBGM(2, true);
+  BGM.play(2, true);
 }
 
 function toLevel3(){
@@ -615,7 +555,6 @@ function toLevel3(){
   contenedor.classList.add('level-3');
   contenedor.classList.remove('level-2');
 
-  // Ocultar UFO al pasar a nivel 3
   document.getElementById('ufoLayer').style.display='none';
 
   startStorm();
@@ -624,7 +563,7 @@ function toLevel3(){
   gameVel = 2.2 * levelSpeedFactor;
   showLevelBanner('NIVEL 3');
 
-  playBGM(3, true);
+  BGM.play(3, true);
 }
 
 /* ===== TORMENTA ===== */
@@ -658,7 +597,7 @@ function startStorm(){
 function stopStorm(){
   rainLayer.innerHTML='';
   lightningLayer.innerHTML='';
-  clearInterval(lightningTimer);
+  clearInterval(lightningTimer); /* <- FIX del typo */
   lightningTimer=null;
 }
 
