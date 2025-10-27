@@ -192,6 +192,19 @@ function ensureAudioCtx(){
   return audioCtx;
 }
 
+/* --- “pulso” inaudible para iOS --- */
+function userUnlockPulse(){
+  try{
+    const ctx = ensureAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    gain.gain.value = 0.0001; // inaudible
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.03);
+  }catch(e){}
+}
+
 /* --- BGM manager --- */
 const BGM_SRC = { 1:'./music/fondoMusic.mp3', 2:'./music/level2.mp3', 3:'./music/level3.mp3' };
 const BGM = {
@@ -309,16 +322,28 @@ function Loop(){
   requestAnimationFrame(Loop);
 }
 
-/* ===== FLUJO ===== */
-function unlockAudioGesture(){
-  if(audioUnlocked) return;
+/* ===== AUDIO UNLOCK ===== */
+function unlockAudioGestureThen(cb){
   try{
-    ensureAudioCtx().resume().then(()=>{ audioUnlocked=true; }).catch(()=>{});
-  }catch(e){}
+    const ctx = ensureAudioCtx();
+    // pulso inaudible dentro del gesto
+    userUnlockPulse();
+    // reanudar y luego ejecutar callback (arrancar BGM)
+    ctx.resume().then(()=>{
+      audioUnlocked = true;
+      if(typeof cb === 'function') cb();
+    }).catch(()=>{
+      if(typeof cb === 'function') cb(); // fallback
+    });
+  }catch(e){
+    if(typeof cb === 'function') cb();
+  }
 }
 
+/* ===== FLUJO ===== */
 function startGame(animal='cow'){
-  unlockAudioGesture();
+  // DESBLOQUEA audio en el mismo gesto del botón START y luego arranca BGM L1
+  unlockAudioGestureThen(()=>{ BGM.play(1, true); });
 
   selectedAnimal=animal;
   level=1;
@@ -330,8 +355,6 @@ function startGame(animal='cow'){
   applyCharacter();
   hideStart();
   showLevelBanner('NIVEL 1');
-
-  BGM.play(1, true);
 }
 
 function backToStart(){
@@ -391,7 +414,8 @@ function Update(){
 
 /* ===== INPUT ===== */
 function onPress(){
-  unlockAudioGesture();
+  // Por si alguien salta sin pasar por START (gesto igualmente desbloquea)
+  if(!audioUnlocked) unlockAudioGestureThen(()=>{ if(!BGM.source) BGM.play(level, false); });
 
   if(startOverlay.classList.contains("show")) return;
   if(lifeLostOverlay.classList.contains("show")){ resumeAfterDeath(); return; }
@@ -488,8 +512,7 @@ function onDeath(){
   dino.classList.add("dino-estrellado");
   parado = true;
   playHit();
-  // Si quieres pausar BGM aquí, descomenta:
-  // BGM.stop();
+  // Mantén la BGM sonando; si quisieras pausarla, usa BGM.stop();
   lives--; renderLives();
   if(lives<=0){ showGameOver(); }
   else{ lifeLostOverlay.classList.add("show"); }
@@ -597,7 +620,7 @@ function startStorm(){
 function stopStorm(){
   rainLayer.innerHTML='';
   lightningLayer.innerHTML='';
-  clearInterval(lightningTimer); /* <- FIX del typo */
+  clearInterval(lightningTimer);
   lightningTimer=null;
 }
 
