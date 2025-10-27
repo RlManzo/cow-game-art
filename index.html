@@ -13,7 +13,7 @@
 /* === TUS ESTILOS (sin cambios visuales) === */
 :root{--accent:#ffd66b;--panel:#121212;--heart-img:url('img/corazones.png')}
 *{margin:0;padding:0;box-sizing:border-box}
-body{height:100vh;background:#584040;display:flex;align-items:center;justify-content:center}
+body{height:100vh;background:#584040;/*display:flex;align-items:center;justify-content:center*/}
 .contenedor{width:920px;height:280px;position:relative;overflow:hidden;border-radius:12px;background:linear-gradient(#b7d6c7,transparent) #ffe2d1;transition:background-color 1s linear, background 1s linear;box-shadow:0 20px 40px rgba(0,0,0,.35);image-rendering:pixelated}
 .mediodia{background-color:#ffdcf3}.tarde{background-color:#ffadad}.noche{background-color:#aca8c7}
 .level-2{background:#000 !important}.level-3{background:#000 !important}
@@ -119,7 +119,7 @@ html, body{
   </audio>
 
   <!-- Juego -->
-  <div id="stage">
+  <div id="">
     <div class="contenedor" id="game">
       <div class="lives" id="lives"></div>
       <div class="score" id="score">000</div>
