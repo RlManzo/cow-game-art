@@ -216,6 +216,22 @@ function tryPlayPendingBGM(){
   playBGM(n, reset);
 }
 
+// Simula un gesto de usuario para habilitar el audio en cada nivel
+function simulateUserGestureForAudio() {
+  try {
+    const ctx = ensureAudioCtx();
+    ctx.resume().then(() => {
+      // reproducir silenciosamente una nota inaudible para "desbloquear"
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0.0001;
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.05);
+    }).catch(()=>{});
+  } catch(e){}
+}
+
 function pauseCurrentBGM(){ const a=bgmEls[level] && bgmEls[level](); if(a) a.pause(); }
 function stopAllBGM(){ [1,2,3].forEach(k=>{ const a=bgmEls[k](); if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } }); }
 
@@ -545,6 +561,7 @@ function toLevel2(){
   resetAll(false);
   score = 0; textoScore.textContent = "000";
   gameVel = 1.8 * levelSpeedFactor;
+   simulateUserGestureForAudio();
   showLevelBanner('NIVEL 2');
   playBGM(2, true); // si falla, quedará pendiente y se lanzará en el próximo tap
 }
@@ -563,6 +580,7 @@ function toLevel3(){
   resetAll(false);
   score = 0; textoScore.textContent = "000";
   gameVel = 2.2 * levelSpeedFactor;
+   simulateUserGestureForAudio();
   showLevelBanner('NIVEL 3');
   playBGM(3, true); // idem: se reintenta en el siguiente gesto
 }
