@@ -79,10 +79,8 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 </head>
 <body>
 
-  <!-- MÚSICA (con playsinline) -->
-  <audio id="bgm-level1" preload="auto" loop playsinline><source src="./music/fondoMusic.mp3" type="audio/mpeg"></audio>
-  <audio id="bgm-level2" preload="auto" loop playsinline><source src="./music/level2.mp3" type="audio/mpeg"></audio>
-  <audio id="bgm-level3" preload="auto" loop playsinline><source src="./music/level3.mp3" type="audio/mpeg"></audio>
+  <!-- MÚSICA: un solo elemento -->
+  <audio id="bgm" preload="auto" loop playsinline></audio>
 
   <!-- SFX -->
   <audio id="hit-sfx" preload="auto" playsinline><source src="./music/estrellar.mp3" type="audio/mpeg"></audio>
@@ -189,54 +187,55 @@ let levelOverlay,levelLabel, rainLayer, lightningLayer;
 
 /* ===== AUDIO ===== */
 let audioCtx=null, hitBuffer=null, sfxPrimed=false;
-const bgmEls = {
-  1: () => document.getElementById('bgm-level1'),
-  2: () => document.getElementById('bgm-level2'),
-  3: () => document.getElementById('bgm-level3'),
-};
 const hitEl= ()=>document.getElementById("hit-sfx");
 
-/* NUEVO: cola de reproducción pendiente (para móviles) */
-let pendingBGM = null;
+/* BGM por nivel (un solo <audio id="bgm">) */
+const BGM_SRC = { 1:'./music/fondoMusic.mp3', 2:'./music/level2.mp3', 3:'./music/level3.mp3' };
+const bgmEl = () => document.getElementById('bgm');
 
-function playBGM(n, reset=false){
-  const target = bgmEls[n] && bgmEls[n]();
-  if(!target) return;
-  [1,2,3].forEach(k => { const a=bgmEls[k](); if(a && a!==target) a.pause(); });
-  if(reset) try{ target.currentTime = 0; }catch(e){}
-  const p = target.play();
-  if(p && typeof p.catch === 'function'){
-    p.catch(()=>{ pendingBGM = { n, reset:true }; });
+let currentBGMLevel = null;  // pista actual
+let pendingBGMLevel = null;  // para iOS: nivel pendiente si play() fue bloqueado
+let pendingReset = false;    // si el pendiente requiere reset
+
+function playBGM(nivel, reset=false){
+  const a = bgmEl();
+  if(!a) return;
+  const want = BGM_SRC[nivel];
+  const switchingTrack = (currentBGMLevel !== nivel) || !a.src || !a.src.includes(want);
+
+  if (switchingTrack) {
+    a.pause();
+    a.src = want;
+    a.load();                 // importante en iOS
+    currentBGMLevel = nivel;
+    if (reset) { try{ a.currentTime = 0; }catch(e){} }
+  } else {
+    // misma pista: si ya suena, no hagas nada
+    if (!a.paused && !a.ended) return;
+    if (reset) { try{ a.currentTime = 0; }catch(e){} }
+  }
+
+  const p = a.play();
+  if (p && typeof p.catch === 'function') {
+    // guarda la intención; solo resetearemos si el pedido original lo pedía y/o hubo cambio de pista
+    p.catch(()=>{ pendingBGMLevel = nivel; pendingReset = switchingTrack ? reset : false; });
   }
 }
 function tryPlayPendingBGM(){
-  if(!pendingBGM) return;
-  const n = pendingBGM.n, reset = pendingBGM.reset;
-  pendingBGM = null;
-  playBGM(n, reset);
+  if(!pendingBGMLevel) return;
+  const lvl = pendingBGMLevel, r = pendingReset;
+  pendingBGMLevel = null; pendingReset = false;
+  playBGM(lvl, r);
 }
-
-// Simula un gesto de usuario para habilitar el audio en cada nivel
-function simulateUserGestureForAudio() {
-  try {
-    const ctx = ensureAudioCtx();
-    ctx.resume().then(() => {
-      // reproducir silenciosamente una nota inaudible para "desbloquear"
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      gain.gain.value = 0.0001;
-      osc.connect(gain).connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.05);
-    }).catch(()=>{});
-  } catch(e){}
+function pauseCurrentBGM(){ const a=bgmEl(); if(a) a.pause(); }
+function stopAllBGM(){
+  const a=bgmEl();
+  if(a){
+    a.pause();
+    // mantenemos el src para no perder el permiso de reproducción en móviles
+    try{ a.currentTime = 0; }catch(e){}
+  }
 }
-
-function pauseCurrentBGM(){ const a=bgmEls[level] && bgmEls[level](); if(a) a.pause(); }
-function stopAllBGM(){ [1,2,3].forEach(k=>{ const a=bgmEls[k](); if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } }); }
-
-/* Tormenta */
-//let lightningTimer=null;
 
 /* ===== HELPERS DE INPUT PARA BOTONES ===== */
 function bindInteractive(el, handler){
@@ -326,7 +325,8 @@ function primeAudioOnce(){
   if(sfxPrimed) return;
   sfxPrimed = true;
   try{ ensureAudioCtx().resume(); }catch(e){}
-  [bgmEls[1](), bgmEls[2](), bgmEls[3](), hitEl()].forEach(a=>{
+  // “primear” el BGM único y el SFX
+  [bgmEl(), hitEl()].forEach(a=>{
     if(!a) return;
     try{
       a.muted=true;
@@ -408,7 +408,6 @@ function Update(){
 /* ===== INPUT ===== */
 function onPress(){
   primeAudioOnce();
-  // si hay una BGM pendiente (iOS), lanzarla ahora
   tryPlayPendingBGM();
 
   if(startOverlay.classList.contains("show")) return;
@@ -416,7 +415,12 @@ function onPress(){
   if(gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show")){ backToStart(); return; }
   if(levelOverlay.classList.contains("show")) return;
 
-  playBGM(level, false);
+  // Solo intenta reproducir si no está ya sonando
+  const a = bgmEl();
+  if (!(a && !a.paused)) {
+    playBGM(level, /*reset*/false);
+  }
+
   saltar();
 }
 function onKeyDown(e){
@@ -561,9 +565,8 @@ function toLevel2(){
   resetAll(false);
   score = 0; textoScore.textContent = "000";
   gameVel = 1.8 * levelSpeedFactor;
-   simulateUserGestureForAudio();
   showLevelBanner('NIVEL 2');
-  playBGM(2, true); // si falla, quedará pendiente y se lanzará en el próximo tap
+  playBGM(2, true); // si iOS lo bloquea, quedará pendiente y se activa en el próximo tap
 }
 
 function toLevel3(){
@@ -580,9 +583,8 @@ function toLevel3(){
   resetAll(false);
   score = 0; textoScore.textContent = "000";
   gameVel = 2.2 * levelSpeedFactor;
-   simulateUserGestureForAudio();
   showLevelBanner('NIVEL 3');
-  playBGM(3, true); // idem: se reintenta en el siguiente gesto
+  playBGM(3, true);
 }
 
 /* ===== TORMENTA ===== */
