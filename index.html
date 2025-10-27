@@ -193,9 +193,10 @@ const hitEl= ()=>document.getElementById("hit-sfx");
 const BGM_SRC = { 1:'./music/fondoMusic.mp3', 2:'./music/level2.mp3', 3:'./music/level3.mp3' };
 const bgmEl = () => document.getElementById('bgm');
 
-let currentBGMLevel = null;  // pista actual
-let pendingBGMLevel = null;  // para iOS: nivel pendiente si play() fue bloqueado
-let pendingReset = false;    // si el pendiente requiere reset
+let currentBGMLevel = null;   // pista actual sonando
+let pendingBGMLevel = null;   // para iOS: nivel pendiente si play() fue bloqueado
+let pendingReset = false;     // si el pendiente requiere reset
+let audioUnlocked = false;    // iOS: ya habilitamos el elemento con un gesto
 
 function playBGM(nivel, reset=false){
   const a = bgmEl();
@@ -217,10 +218,43 @@ function playBGM(nivel, reset=false){
 
   const p = a.play();
   if (p && typeof p.catch === 'function') {
-    // guarda la intención; solo resetearemos si el pedido original lo pedía y/o hubo cambio de pista
-    p.catch(()=>{ pendingBGMLevel = nivel; pendingReset = switchingTrack ? reset : false; });
+    p.catch(()=>{
+      // si falla (iOS sin gesto), queda pendiente y la tomamos en el próximo tap real
+      pendingBGMLevel = nivel;
+      pendingReset = switchingTrack ? reset : false;
+    });
   }
 }
+
+function ensureUnlockedAndPlay(nivel, reset=false){
+  const a = bgmEl();
+  if(!a) return;
+
+  // Si aún no desbloqueamos el audio en iOS, hacemos un play silencioso (muted) y después desmutamos.
+  if(!audioUnlocked){
+    const want = BGM_SRC[nivel];
+    if (!a.src || !a.src.includes(want)) { a.src = want; a.load(); currentBGMLevel = nivel; }
+    if (reset) { try{ a.currentTime = 0; }catch(e){} }
+
+    a.muted = true;
+    const p = a.play();
+    if(p && typeof p.then === 'function'){
+      p.then(()=>{
+        a.muted = false;
+        audioUnlocked = true;
+      }).catch(()=>{
+        // Si aún así falla, quedará pendiente para el siguiente tap
+        pendingBGMLevel = nivel;
+        pendingReset = reset;
+      });
+    }
+    return;
+  }
+
+  // Si ya está desbloqueado, reproducimos normal (con la lógica de cambio de pista)
+  playBGM(nivel, reset);
+}
+
 function tryPlayPendingBGM(){
   if(!pendingBGMLevel) return;
   const lvl = pendingBGMLevel, r = pendingReset;
@@ -232,7 +266,6 @@ function stopAllBGM(){
   const a=bgmEl();
   if(a){
     a.pause();
-    // mantenemos el src para no perder el permiso de reproducción en móviles
     try{ a.currentTime = 0; }catch(e){}
   }
 }
@@ -325,7 +358,7 @@ function primeAudioOnce(){
   if(sfxPrimed) return;
   sfxPrimed = true;
   try{ ensureAudioCtx().resume(); }catch(e){}
-  // “primear” el BGM único y el SFX
+  // “primear” el BGM y el SFX
   [bgmEl(), hitEl()].forEach(a=>{
     if(!a) return;
     try{
@@ -347,7 +380,9 @@ function startGame(animal='cow'){
   applyCharacter();
   hideStart();
   showLevelBanner('NIVEL 1');
-  playBGM(1, true);
+
+  // Primer gesto del usuario: desbloquea y reproduce nivel 1 sin bloqueos de iOS
+  ensureUnlockedAndPlay(1, true);
 }
 
 function backToStart(){
@@ -408,6 +443,8 @@ function Update(){
 /* ===== INPUT ===== */
 function onPress(){
   primeAudioOnce();
+
+  // iOS: si había un play pendiente por bloqueo, ejecútalo ahora
   tryPlayPendingBGM();
 
   if(startOverlay.classList.contains("show")) return;
@@ -415,9 +452,9 @@ function onPress(){
   if(gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show")){ backToStart(); return; }
   if(levelOverlay.classList.contains("show")) return;
 
-  // Solo intenta reproducir si no está ya sonando
+  // Si ya desbloqueamos audio y la pista del nivel actual no suena, arráncala
   const a = bgmEl();
-  if (!(a && !a.paused)) {
+  if (audioUnlocked && !(a && !a.paused)) {
     playBGM(level, /*reset*/false);
   }
 
@@ -566,7 +603,9 @@ function toLevel2(){
   score = 0; textoScore.textContent = "000";
   gameVel = 1.8 * levelSpeedFactor;
   showLevelBanner('NIVEL 2');
-  playBGM(2, true); // si iOS lo bloquea, quedará pendiente y se activa en el próximo tap
+
+  // Cambio de pista ocurre aquí. En iOS, si se bloquea, se aplicará en el próximo tap (pendingBGMLevel).
+  playBGM(2, true);
 }
 
 function toLevel3(){
@@ -584,6 +623,7 @@ function toLevel3(){
   score = 0; textoScore.textContent = "000";
   gameVel = 2.2 * levelSpeedFactor;
   showLevelBanner('NIVEL 3');
+
   playBGM(3, true);
 }
 
