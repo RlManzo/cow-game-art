@@ -10,7 +10,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
   <style>
-/* === TUS ESTILOS (sin cambios visuales) === */
 :root{--accent:#ffd66b;--panel:#121212;--heart-img:url('img/corazones.png')}
 *{margin:0;padding:0;box-sizing:border-box}
 body{height:100vh;background:#584040;display:flex;align-items:center;justify-content:center}
@@ -18,13 +17,22 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 .mediodia{background-color:#ffdcf3}.tarde{background-color:#ffadad}.noche{background-color:#aca8c7}
 .level-2{background:#000 !important}.level-3{background:#000 !important}
 .score{position:absolute;top:10px;right:14px;z-index:20;color:#d48871;font:700 18px 'Press Start 2P',monospace}
-.lives{position:absolute;top:10px;left:12px;height:28px;display:flex;gap:6px;z-index:20}
+
+/* HUD izquierda (vidas + mini selector) */
+.hud-left{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:10px;z-index:20}
+.lives{height:28px;display:flex;gap:6px}
 .life{width:28px;height:28px;background-image:var(--heart-img);background-repeat:no-repeat;background-size:300% 100%;opacity:1;transition:opacity .15s ease, transform .15s ease}
 .life.lost{opacity:0;transform:scale(.9)}.heart-1{background-position:0% 0}.heart-2{background-position:50% 0}.heart-3{background-position:100% 0}
+
+/* HUD centro (coins) */
+.hud-center{position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:20; pointer-events:none;}
+.coins-hud{font:700 16px 'Press Start 2P', monospace; color:#ffd66b; text-shadow:0 2px 0 #000, 0 0 8px rgba(0,0,0,.35);}
+
 .suelo{width:200%;height:42px;position:absolute;bottom:0;left:0;background:url('img/suelo.png') repeat-x 0 0;background-size:50% 42px}
 .dino{width:79px;height:84px;position:absolute;bottom:22px;left:42px;z-index:3;background-size:336px 90px;background-position-x:0}
 .dino.cow{background-image:url('img/cow-test2.png')}
 .dino.chicken{background-image:url('img/chicken-test1.png')}
+.dino.pig{background-image:url('img/pig-test1.png')}
 .dino-corriendo{animation:animarDino .25s steps(2) infinite}.dino-estrellado{background-position-x:-252px}
 @keyframes animarDino{from{background-position-x:-84px}to{background-position-x:-252px}}
 .cactus{width:46px;height:81px;position:absolute;bottom:16px;left:600px;z-index:2;background:url('img/hacha.png') no-repeat}
@@ -45,15 +53,13 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 .panel{position:relative;z-index:2;width:92%;max-width:780px;padding:22px;text-align:center;color:#eaeaea;background:var(--panel);border:4px solid #fff;outline:4px solid #000;box-shadow:inset 0 0 0 4px #444,0 12px 0 #000;border-radius:8px;font-family:'Press Start 2P',monospace;pointer-events:auto}
 .title-xxl{font-size:26px;color:--accent;text-shadow:0 3px 0 #000;margin-bottom:10px}
 .sub{font-size:12px;color:#cacaca;line-height:1.6;margin-bottom:14px}
-.start-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0}
+.start-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:12px 0}
 .char{display:flex;align-items:center;gap:12px;padding:12px;background:#1f1f1f;border:3px solid #555;border-radius:8px;cursor:pointer;transition:transform .08s ease,border-color .08s ease}
 .char:hover{transform:translateY(-2px);border-color:#9ad3ff}
-.char-swatch{width:84px;height:90px;background-size:336px 90px;background-position-x:-84px}
-.swatch-cow{background-image:url('img/cow-test2.png')}
-.swatch-chicken{background-image:url('img/chicken-test1.png')}
 .char-name{font-size:14px;color:#fff}.char-desc{font-size:10px;color:#a8a8a8;margin-top:6px;text-align:left}
 .retro-btn{display:inline-block;padding:12px 18px;background:#2b2b2b;color:#fff;border:3px solid #fff;outline:3px solid #000;border-radius:8px;box-shadow:0 6px 0 #000;text-decoration:none;font-family:'Press Start 2P',monospace;font-size:12px;cursor:pointer}
-.retro-btn:hover{transform:translateY(-1px)}.retro-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #000}
+.retro-btn:hover { transform: translateY(-1px); }
+.retro-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #000; }
 
 .overlay--ingame{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:transparent;pointer-events:none}
 .overlay--ingame.show{display:flex}
@@ -64,6 +70,7 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 .go-msg{color:#ff3b3b;font-size:20px;margin-bottom:12px;text-shadow:0 2px 0 #000,0 0 10px rgba(255,59,59,.45)}
 .win-msg{color:#ffe46b;font-size:20px;margin-bottom:12px;text-shadow:0 2px 0 #000,0 0 10px rgba(255,228,107,.45)}
 
+/* Etiqueta de nivel */
 .level-overlay{position:absolute;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:transparent;pointer-events:none}
 .level-overlay.show{display:flex}
 .level-label{font-family:'Press Start 2P',monospace;font-size:18px;color:#fff;text-shadow:0 2px 0 #000,0 0 8px rgba(0,0,0,.4)}
@@ -75,6 +82,39 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 @keyframes fall{to{transform:translateY(320px)}}
 .flash{position:absolute;inset:0;background:linear-gradient(#fff,rgba(255,255,255,.6) 40%, rgba(255,255,255,0) 60%);opacity:0;animation:flash 300ms ease-out;mix-blend-mode:screen}
 @keyframes flash{0%{opacity:0}10%{opacity:.9}40%{opacity:.25}100%{opacity:0}}
+
+/* === MINI SELECTOR (ocupa el lugar de los corazones) === */
+.mini-select{display:none;align-items:center;gap:6px}
+.mini-select.show{display:flex}
+.mini-label{font:10px 'Press Start 2P', monospace; color:#ffe; text-shadow:0 2px 0 #000}
+.mini-btn{
+  font:10px 'Press Start 2P', monospace;
+  padding:4px 6px;
+  background:#1f1f1f; color:#fff;
+  border:2px solid #fff; outline:2px solid #000;
+  border-radius:6px; cursor:pointer; box-shadow:0 3px 0 #000;
+}
+.mini-btn:hover{transform:translateY(-1px)}
+.mini-btn:active{transform:translateY(1px); box-shadow:0 1px 0 #000}
+.mini-btn.selected{outline-color:#9ad3ff;border-color:#9ad3ff}
+
+/* === CONTADOR grande en Game Over === */
+.go-continue{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:8px}
+.go-label{font:12px 'Press Start 2P', monospace; color:#ffe; text-shadow:0 2px 0 #000}
+.go-count #countdown{
+  display:block; font:700 56px 'Press Start 2P', monospace; line-height:1;
+  color:#ffe46b; text-shadow:0 3px 0 #000, 0 0 14px rgba(255,228,107,.45);
+  animation:pop 1s infinite steps(1);
+}
+@keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+/* === STORY/CONTEXT SCREEN (solo 1) === */
+.context-title{color:#ffe46b;text-shadow:0 3px 0 #000;font-size:22px;margin-bottom:12px}
+.video-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.video-strip video{width:100%;aspect-ratio:16/9;border-radius:8px;border:3px solid #fff;outline:3px solid #000;box-shadow:0 6px 0 #000}
+.context-text{font:12px 'Press Start 2P', monospace;color:#ddd;text-align:left;line-height:1.7}
+.context-actions{display:flex;gap:12px;justify-content:center;margin-top:14px}
+@media (max-width:760px){ .video-strip{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
@@ -89,8 +129,21 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 
   <!-- Juego -->
   <div class="contenedor" id="game">
-    
-    <div class="lives" id="lives"></div>
+    <div class="hud-left">
+      <div class="lives" id="lives"></div>
+      <div class="mini-select" id="miniSelect" aria-label="Elegir personaje">
+        <div class="mini-label">ELIGIR:</div>
+        <button class="mini-btn" data-mini="cow" title="Vaca">🐄 VACA</button>
+        <button class="mini-btn" data-mini="chicken" title="Gallina">🐔 GALLINA</button>
+        <button class="mini-btn" data-mini="pig" title="Cerdo">🐷 CERDO</button>
+      </div>
+    </div>
+
+    <!-- HUD centro: COINS -->
+    <div class="hud-center" id="hudCenter">
+      <div class="coins-hud">COINS: <span id="coinsHud">0</span></div>
+    </div>
+
     <div class="score" id="score">000</div>
 
     <div class="suelo"></div>
@@ -108,10 +161,16 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
       </div>
     </div>
 
+    <!-- GAME OVER -->
     <div class="overlay--ingame" id="gameOverOverlay">
       <div class="life-lost-wrap">
         <div class="go-msg">GAME OVER</div>
-        <button class="retro-btn green" id="backToStart">VOLVER AL INICIO</button>
+        <div class="go-continue">
+          <div class="go-label">CONTINUE? CHOOSE ANIMAL + INSERT COIN [C]</div>
+          <div class="go-count"><span id="countdown">10</span></div>
+        </div>
+        <button class="retro-btn green" id="restartBtn" type="button">RESTART</button>
+        <button class="retro-btn green" id="insertCoinBtn" type="button">INSERT COIN</button>
       </div>
     </div>
 
@@ -127,27 +186,82 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
     </div>
   </div>
 
-  <div class="overlay show" id="startOverlay" aria-hidden="false">
+  <!-- PANTALLA 1: BOOT -->
+  <div class="overlay show" id="bootOverlay" aria-hidden="false">
     <div class="panel">
-      <div class="title-xxl" style="color: yellow !important;">SAVE THE ANIMAL</div>
-      <div class="sub">Elegí tu personaje. Saltá con <b>clic</b>, <b>toque</b>, <b>Espacio</b> o <b>↑</b>. Tenés <b>3 vidas</b>.</div>
+      <div class="title-xxl" style="color: yellow !important;">ZONA ANIMAL</div>
+      <div class="sub">
+        Presioná <b>START</b> para jugar (luego elegís tu personaje).<br/>
+        Podés cargar <b>coins</b> ahora: clic en <b>INSERT COIN</b> o tecla <b>C</b>.
+      </div>
+      <div class="sub" style="margin-bottom:10px;">COINS: <span id="coinsBoot">0</span></div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-bottom:12px;">
+        <a class="retro-btn green" id="goToSelect" tabindex="0" role="button" aria-label="Ir a historia">START</a>
+        <a class="retro-btn" id="insertCoinBoot" role="button">INSERT COIN</a>
+      </div>
+      <div class="sub" style="margin-top:6px">Atajos: <b>Enter/Space</b> = START, <b>C</b> = coin</div>
+    </div>
+  </div>
+
+  <!-- CONTEXTO (única) -->
+  <div class="overlay" id="contextOverlay1" aria-hidden="true">
+    <div class="panel">
+      <div class="context-title">PRÓLOGO</div>
+
+      <div class="video-strip">
+        <video muted playsinline loop autoplay preload="metadata">
+          <source src="./video/cargando1.mp4" type="video/mp4">
+        </video>
+        <video muted playsinline loop autoplay preload="metadata">
+          <source src="./video/cargando2.mp4" type="video/mp4">
+        </video>
+        <video muted playsinline loop autoplay preload="metadata">
+          <source src="./video/cargando3.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="context-text">
+        En un futuro no muy lejano, los avances tecnologicos han permitido a la humanidad total autonomia sobre su alimentacion.
+        Por un modico precio usted puede adquirir su propio animal y consumirlo a gusto.
+         Se recomienda siempre reservar un espacio de su casa que sirva de "Zona animal" como estacion de recarga, al finalizar podra volver a conectarselo.
+          Recuerde: el animal le pertenece y esta totalmente domesticado, aunque ¡A VECES ALGUNO LOGRA ESCAPAR!
+      </div>
+
+      <div class="context-actions">
+        <a class="retro-btn green" id="ctx1Continue">CONTINUAR</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: SELECCIÓN DE PERSONAJE -->
+  <div class="overlay" id="selectOverlay" aria-hidden="true">
+    <div class="panel">
+      <div class="title-xxl" style="color: yellow !important;">ELEGÍ TU PERSONAJE</div>
+      <div class="sub">Saltá  <b>tocando la pantalla</b>, Tenés <b>3 vidas</b>. DEBES SALVAR <b>AL ANIMAL</b> Y AYUDARLO A ESCAPAR.</div>
+
       <div class="start-grid" id="charGrid">
-        <div class="char" data-animal="cow" tabindex="0" role="button" aria-label="Elegir vaca">
-        
+        <div class="char" data-animal="cow" tabindex="0" role="button" aria-label="Elegir vaca">       
           <div>
             <div class="char-name">🐄 VACA</div>
-            <div class="char-desc">Sprite original, paso firme </div>
+            <div class="char-desc">Hermosa y de paso firme</div>
           </div>
         </div>
-        <div class="char" data-animal="chicken" tabindex="0" role="button" aria-label="Elegir gallina">
-          
+        <div class="char" data-animal="chicken" tabindex="0" role="button" aria-label="Elegir gallina">        
           <div>
             <div class="char-name">🐔 GALLINA</div>
-            <div class="char-desc">Ligera y saltarina </div>
+            <div class="char-desc">Ligera y saltarina</div>
+          </div>
+        </div>
+        <div class="char" data-animal="pig" tabindex="0" role="button" aria-label="Elegir cerdo">
+          <div>
+            <div class="char-name">🐷 CERDO</div>
+            <div class="char-desc">Compacto, actitud punk</div>
           </div>
         </div>
       </div>
-      <a class="retro-btn green" id="startDefault" tabindex="0" role="button" aria-label="Start vaca">START (VACA)</a>
+
+      <a class="retro-btn green" id="startDefault" tabindex="0" role="button" aria-label="Start por defecto">JUGAR</a>
+      
     </div>
   </div>
 
@@ -178,10 +292,19 @@ let lives=MAX_LIVES;
 let level=1;                 // 1,2,3
 let levelSpeedFactor=1;
 
-let contenedor,dino,textoScore,suelo,startOverlay,lifeLostOverlay,gameOverOverlay,winOverlay,livesHud;
+let contenedor,dino,textoScore,suelo,bootOverlay,selectOverlay,lifeLostOverlay,gameOverOverlay,winOverlay,livesHud;
 let levelOverlay,levelLabel, rainLayer, lightningLayer;
 
-/* ===== AUDIO: BGM con <audio> (compatible iOS) ===== */
+let credits=0;
+const CREDIT_LIVES = MAX_LIVES;
+let countdown=10, countdownId=null;
+
+let deathY=sueloY;
+let invulnerableUntil=0;
+
+let pendingChoiceAnimal=null;
+
+/* ===== AUDIO ===== */
 const BGM_SRC = { 1:'./music/fondoMusic.mp3', 2:'./music/level2.mp3', 3:'./music/level3.mp3' };
 const bgm = ()=>document.getElementById('bgm');
 let audioUnlocked=false;
@@ -190,54 +313,37 @@ let pendingBGM=null;
 function setBgmSrcForLevel(lvl){
   const a = bgm();
   const want = BGM_SRC[lvl];
-  // sólo cambiamos src si es distinto
   if(!a.src || !a.src.includes(want)){
     a.src = want;
-    // iOS: load explícito cuando cambia la pista
     try{ a.load(); }catch(e){}
   }
 }
-
 function playBGM(lvl,{reset=false, fromGesture=false}={}){
   const a = bgm(); if(!a) return;
   setBgmSrcForLevel(lvl);
   if(reset){ try{ a.currentTime=0; }catch(e){} }
   const p = a.play();
   if(p && typeof p.catch==='function'){
-    p.catch(()=>{
-      // Si no fue desde gesto, la encolamos para el próximo tap
-      if(!fromGesture) pendingBGM = {lvl, reset:true};
-    });
+    p.catch(()=>{ if(!fromGesture) pendingBGM = {lvl, reset:true}; });
   }
 }
-
 function tryPlayPendingBGM(){
   if(!pendingBGM) return;
   const {lvl, reset} = pendingBGM;
   pendingBGM = null;
   playBGM(lvl,{reset, fromGesture:true});
 }
-
-/* “Desbloqueo” rápido (pulso inaudible con el mismo <audio>) */
 function unlockAudioNow(){
   if(audioUnlocked) return;
   const a = bgm(); if(!a) return;
-  // Truco seguro: reproducir 1 frame en mute y parar, dentro del gesto
   try{
     a.muted = true;
-    // si no hay src aún, usa la del nivel 1 para priming
     if(!a.src) setBgmSrcForLevel(1);
     const p = a.play();
     if(p && typeof p.then==='function'){
-      p.then(()=>{
-        a.pause();
-        try{ a.currentTime = 0; }catch(e){}
-        a.muted = false;
-        audioUnlocked = true;
-      }).catch(()=>{ a.muted=false; });
-    }else{
-      a.pause(); a.muted=false; audioUnlocked=true;
-    }
+      p.then(()=>{ a.pause(); try{ a.currentTime=0; }catch(e){}; a.muted=false; audioUnlocked=true; })
+       .catch(()=>{ a.muted=false; });
+    }else{ a.pause(); a.muted=false; audioUnlocked=true; }
   }catch(e){ a.muted=false; }
 }
 
@@ -258,7 +364,9 @@ function init(){
   dino=document.getElementById("player");
   textoScore=document.getElementById("score");
   suelo=document.querySelector(".suelo");
-  startOverlay=document.getElementById("startOverlay");
+
+  bootOverlay=document.getElementById("bootOverlay");
+  selectOverlay=document.getElementById("selectOverlay");
   lifeLostOverlay=document.getElementById("lifeLostOverlay");
   gameOverOverlay=document.getElementById("gameOverOverlay");
   winOverlay=document.getElementById("winOverlay");
@@ -268,20 +376,52 @@ function init(){
   rainLayer=document.getElementById("rainLayer");
   lightningLayer=document.getElementById("lightningLayer");
 
+  // ===== Botones BOOT
+  bindInteractive(document.getElementById("goToSelect"), ()=> showContext1());
+  bindInteractive(document.getElementById("insertCoinBoot"), ()=>{ insertCoin(); refreshBootCoins(); });
+
+  // ===== Pantalla Contexto (única)
+  bindInteractive(document.getElementById("ctx1Continue"), ()=> showSelect());
+  bindInteractive(document.getElementById("ctx1Skip"), ()=> showSelect());
+
+  // ===== Selección de personaje
   const grid=document.getElementById('charGrid');
+  let tempSelection = 'cow';
   grid.querySelectorAll('.char').forEach(card=>{
-    bindInteractive(card, ()=> startGame(card.getAttribute('data-animal')||'cow'));
+    card.addEventListener('click', ()=>{
+      tempSelection = card.getAttribute('data-animal')||'cow';
+      grid.querySelectorAll('.char').forEach(c=>c.style.borderColor='#555');
+      card.style.borderColor = '#9ad3ff';
+    });
   });
-  bindInteractive(document.getElementById("startDefault"), ()=> startGame('cow'));
+  bindInteractive(document.getElementById("startDefault"), ()=>{ startGame(tempSelection); });
 
+  // ===== In-game overlays
   bindInteractive(document.getElementById("retryBtn"), resumeAfterDeath);
-  bindInteractive(document.getElementById("backToStart"), backToStart);
-  bindInteractive(document.getElementById("backToStartWin"), backToStart);
+  bindInteractive(document.getElementById("backToStartWin"), backToBoot);
 
-  // Tap global: útil para reintentar BGM si quedó pendiente
+  // ===== GAME OVER
+  bindInteractive(document.getElementById('restartBtn'), onRestartChoose);
+  bindInteractive(document.getElementById('insertCoinBtn'), ()=>{
+    insertCoin();                 // suma coins ilimitadas
+    tryAutoContinue();            // si ya hay animal elegido, continúa al toque
+  });
+
+  // MINI SELECTOR clics (independientes del coin)
+  document.querySelectorAll('#miniSelect [data-mini]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      chooseMini(el.getAttribute('data-mini'));
+    });
+  });
+
+  // Inputs globales
   window.addEventListener("pointerdown", ()=>{ tryPlayPendingBGM(); onPress(); }, {passive:true});
   window.addEventListener("touchstart",  ()=>{ tryPlayPendingBGM(); onPress(); }, {passive:true});
   window.addEventListener("keydown", onKeyDown, true);
+
+  // Inicializar HUD coins
+  updateCredits(); refreshBootCoins();
 
   Loop();
 }
@@ -292,43 +432,54 @@ function Loop(){
   requestAnimationFrame(Loop);
 }
 
-/* ===== FLUJO ===== */
-function startGame(animal='cow'){
-  // 1) Desbloquea audio en el MISMO gesto del botón START
-  unlockAudioNow();
-  // 2) Arranca música del nivel 1 EN ESE MISMO gesto
-  playBGM(1,{reset:true, fromGesture:true});
-
-  selectedAnimal=animal;
-  level=1;
-  levelSpeedFactor=1;
-  contenedor.classList.remove('level-2','level-3','mediodia','tarde','noche');
-  document.getElementById('ufoLayer').style.display='none';
-  stopStorm();
-  resetAll(true);
-  applyCharacter();
-  hideStart();
-  showLevelBanner('NIVEL 1');
-}
-
-function backToStart(){
-  const a=bgm(); if(a){ a.pause(); try{a.currentTime=0;}catch(e){} }
-  showStart();
-}
-
-function showStart(){
-  resetAll(true);
-  startOverlay.classList.add("show");
+/* ===== PANTALLAS / CONTEXTO ===== */
+function showBoot(){
+  document.getElementById('bootOverlay').classList.add("show");
+  document.getElementById('contextOverlay1').classList.remove("show");
+  selectOverlay.classList.remove("show");
   lifeLostOverlay.classList.remove("show");
   gameOverOverlay.classList.remove("show");
   winOverlay.classList.remove("show");
   levelOverlay.classList.remove("show");
   stopStorm();
+  hideMiniSelect();
+  refreshBootCoins();
 }
 
-function hideStart(){
-  startOverlay.classList.remove("show");
+function showContext1(){
+  document.getElementById('bootOverlay').classList.remove("show");
+  document.getElementById('contextOverlay1').classList.add("show");
+}
+
+function showSelect(){
+  document.getElementById('contextOverlay1').classList.remove("show");
+  selectOverlay.classList.add("show");
+  unlockAudioNow();
+}
+
+function hideSelect(){
+  selectOverlay.classList.remove("show");
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+}
+
+/* ===== FLUJO ===== */
+function startGame(animal='cow'){
+  playBGM(1,{reset:true, fromGesture:true});
+  selectedAnimal=animal;
+  level=1; levelSpeedFactor=1;
+  contenedor.classList.remove('level-2','level-3','mediodia','tarde','noche');
+  document.getElementById('ufoLayer').style.display='none';
+  stopStorm();
+  resetAll(true);
+  applyCharacter();
+  hideSelect();
+  showLevelBanner('NIVEL 1');
+}
+
+function backToBoot(){
+  const a=bgm(); if(a){ a.pause(); try{a.currentTime=0;}catch(e){} }
+  showBoot();
+  resetAll(true);
 }
 
 /* ===== RESET ===== */
@@ -341,23 +492,30 @@ function resetAll(full=false){
   parado=false; saltando=false;
   if(full){ score=0; textoScore.textContent="000"; lives=MAX_LIVES; }
   renderLives();
+  hideMiniSelect();
 }
 
 function applyCharacter(){
-  dino.classList.remove("cow","chicken");
+  dino.classList.remove("cow","chicken","pig");
   dino.classList.add(selectedAnimal);
 }
 
 /* ===== UPDATE ===== */
 function Update(){
-  if(parado || startOverlay.classList.contains("show") || lifeLostOverlay.classList.contains("show") || gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show") || levelOverlay.classList.contains("show")) return;
+  if(
+    parado ||
+    document.getElementById('bootOverlay').classList.contains("show") ||
+    document.getElementById('contextOverlay1').classList.contains("show") ||
+    selectOverlay.classList.contains("show") ||
+    lifeLostOverlay.classList.contains("show") ||
+    gameOverOverlay.classList.contains("show") ||
+    winOverlay.classList.contains("show") ||
+    levelOverlay.classList.contains("show")
+  ) return;
 
-  moverDinosaurio();
-  moverSuelo();
-  decidirCrearObstaculos();
-  decidirCrearNubes();
-  moverObstaculos();
-  moverNubes();
+  moverDinosaurio(); moverSuelo();
+  decidirCrearObstaculos(); decidirCrearNubes();
+  moverObstaculos(); moverNubes();
   detectarColision();
   velY -= gravedad * deltaTime;
 
@@ -368,10 +526,15 @@ function Update(){
 
 /* ===== INPUT ===== */
 function onPress(){
-  if(startOverlay.classList.contains("show")) return;
-  if(lifeLostOverlay.classList.contains("show")){ resumeAfterDeath(); return; }
-  if(gameOverOverlay.classList.contains("show") || winOverlay.classList.contains("show")){ backToStart(); return; }
-  if(levelOverlay.classList.contains("show")) return;
+  if (
+    document.getElementById('bootOverlay').classList.contains("show") ||
+    document.getElementById('contextOverlay1').classList.contains("show") ||
+    selectOverlay.classList.contains("show") ||
+    lifeLostOverlay.classList.contains("show") ||
+    gameOverOverlay.classList.contains("show") ||
+    winOverlay.classList.contains("show") ||
+    levelOverlay.classList.contains("show")
+  ) return;
 
   const a=bgm(); if(a && a.paused){ playBGM(level,{reset:false}); }
   saltar();
@@ -379,13 +542,35 @@ function onPress(){
 function onKeyDown(e){
   const isSpace = e.code==="Space" || e.key===" " || e.keyCode===32;
   const isArrowUp = e.code==="ArrowUp" || e.keyCode===38;
-  if(startOverlay.classList.contains('show') && (e.code==='Enter'||isSpace)){
-    e.preventDefault(); startGame('cow'); return;
+  const isC = (e.code==='KeyC' || e.key?.toLowerCase()==='c');
+  const isEnter = e.code==='Enter';
+  const isS = (e.key?.toLowerCase()==='s');
+
+  // BOOT
+  if(document.getElementById('bootOverlay').classList.contains('show')){
+    if(isC){ e.preventDefault(); insertCoin(); refreshBootCoins(); return; }
+    if(isEnter||isSpace){ e.preventDefault(); showContext1(); return; }
   }
-  if(isSpace||isArrowUp){
+  // CONTEXTO (único)
+  if(document.getElementById('contextOverlay1').classList.contains('show')){
+    if(isC){ e.preventDefault(); insertCoin(); refreshBootCoins(); return; }
+    if(isS){ e.preventDefault(); showSelect(); return; }
+    if(isEnter||isSpace){ e.preventDefault(); showSelect(); return; }
+  }
+  // SELECT
+  if(selectOverlay.classList.contains('show')){
+    if(isC){ e.preventDefault(); insertCoin(); refreshBootCoins(); return; }
+    if(isEnter||isSpace){ e.preventDefault(); document.getElementById('startDefault').click(); return; }
+  }
+  // Game Over: C = Insert Coin
+  if(gameOverOverlay.classList.contains('show') && isC){
     e.preventDefault();
-    onPress();
+    insertCoin();
+    tryAutoContinue();
+    return;
   }
+
+  if(isSpace||isArrowUp){ e.preventDefault(); onPress(); }
 }
 
 /* ===== FÍSICA ===== */
@@ -453,6 +638,7 @@ function ganarPuntos(){
 
 /* ===== COLISIÓN / VIDAS ===== */
 function detectarColision(){
+  if(performance.now() < invulnerableUntil) return;
   for(let i=0;i<obstaculos.length;i++){
     if(obstaculos[i].posX > dinoPosX + dino.clientWidth) break;
     if(isCollision(dino,obstaculos[i],10,30,15,20)){ onDeath(); break; }
@@ -462,25 +648,161 @@ function onDeath(){
   dino.classList.remove("dino-corriendo");
   dino.classList.add("dino-estrellado");
   parado = true;
-  // SFX simple con <audio> del DOM
+  deathY = dinoPosY;
   const s=document.getElementById('hit-sfx'); if(s){ s.currentTime=0; s.play().catch(()=>{}); }
   lives--; renderLives();
-  if(lives<=0){ showGameOver(); }
-  else{ lifeLostOverlay.classList.add("show"); }
+  if(lives<=0){ showGameOver(); } else { lifeLostOverlay.classList.add("show"); }
 }
 function resumeAfterDeath(){
   lifeLostOverlay.classList.remove("show");
-  obstaculos.forEach(o=>o.remove()); obstaculos=[];
-  nubes.forEach(n=>n.remove()); nubes=[];
+  clearStageButKeepScore();
   dino.classList.remove("dino-estrellado");
   dino.classList.add("dino-corriendo");
   dinoPosY=sueloY; velY=0; parado=false;
-  // si por algún motivo quedó pausada:
   const a=bgm(); if(a && a.paused){ playBGM(level,{reset:false}); }
 }
-function showGameOver(){ gameOverOverlay.classList.add("show"); }
+function clearStageButKeepScore(){ obstaculos.forEach(o=>o.remove()); obstaculos=[]; nubes.forEach(n=>n.remove()); }
+
+/* ===== GAME OVER ===== */
+function showGameOver(){
+  gameOverOverlay.classList.add("show");
+  parado = true;
+  pendingChoiceAnimal = null;
+
+  const rb = document.getElementById('restartBtn');
+  const ic = document.getElementById('insertCoinBtn');
+  if(rb){ rb.style.display = 'inline-block'; rb.disabled = (credits <= 0); }
+  if(ic){ ic.style.display = 'inline-block'; }
+
+  hideMiniSelect();
+  startCountdown();
+}
+
+function onRestartChoose(){
+  if(credits <= 0) return;    // no dejar reiniciar sin coins
+  stopCountdown();
+  showMiniSelect();
+  const rb = document.getElementById('restartBtn');
+  if(rb) rb.style.display = 'none';
+  updateGOUI();
+}
+
+function tryAutoContinue(){
+  if(!gameOverOverlay.classList.contains('show')) return;
+  if(!pendingChoiceAnimal || credits<=0) return;
+
+  credits--; updateCredits(); refreshBootCoins();
+  stopCountdown();
+
+  selectedAnimal = pendingChoiceAnimal;
+  applyCharacter();
+
+  gameOverOverlay.classList.remove('show');
+  hideMiniSelect();
+
+  lives = CREDIT_LIVES; renderLives();
+
+  dino.classList.remove("dino-estrellado"); 
+  dino.classList.add("dino-corriendo");
+  dinoPosY = Math.max(sueloY, Math.min(deathY, 200)); 
+  velY = 0;
+  invulnerableUntil = performance.now() + 1000;
+
+  parado = false;
+  const a=bgm(); if(a && a.paused){ playBGM(level,{reset:false}); }
+}
+
+function startCountdown(){
+  stopCountdown(); countdown = 10; updateCountdown();
+  countdownId = setInterval(()=>{
+    countdown--; updateCountdown();
+    if(countdown<=0){
+      stopCountdown();
+      if(gameOverOverlay.classList.contains('show')) backToBoot();
+    }
+  },1000);
+}
+function stopCountdown(){ if(countdownId){ clearInterval(countdownId); countdownId=null; } }
+function updateCountdown(){
+  const el=document.getElementById('countdown'); if(!el) return;
+  el.textContent = String(countdown);
+  el.style.color = countdown <= 3 ? '#ff3b3b' : '#ffe46b';
+}
+
+/* ===== COINS ===== */
+function insertCoin(){
+  credits++;
+  updateCredits();
+  refreshBootCoins();
+  if (gameOverOverlay.classList.contains('show')) {
+    updateGOUI(); // habilita RESTART si corresponde
+  }
+}
+
+function updateCredits(){
+  const hud = document.getElementById('coinsHud');
+  if(hud) hud.textContent = String(credits);
+  updateGOUI();
+}
+function refreshBootCoins(){ const b=document.getElementById('coinsBoot'); if(b) b.textContent=String(credits); }
+
+/* ===== MINI SELECTOR ===== */
+function showMiniSelect(){
+  if(livesHud) livesHud.style.display='none';
+  const mini=document.getElementById('miniSelect'); mini.classList.add('show');
+}
+function hideMiniSelect(){
+  const mini=document.getElementById('miniSelect'); mini.classList.remove('show');
+  if(livesHud) livesHud.style.display='flex';
+}
+function chooseMini(animal){
+  pendingChoiceAnimal = animal || selectedAnimal;
+
+  document.querySelectorAll('#miniSelect .mini-btn')
+    .forEach(b=>b.classList.toggle('selected', b.dataset.mini === pendingChoiceAnimal));
+
+  const goVisible   = gameOverOverlay.classList.contains('show');
+  const miniVisible = document.getElementById('miniSelect').classList.contains('show');
+
+  if(goVisible && miniVisible && credits > 0){
+    credits--; updateCredits(); refreshBootCoins();
+
+    selectedAnimal = pendingChoiceAnimal;
+    applyCharacter();
+
+    gameOverOverlay.classList.remove('show');
+    hideMiniSelect();
+
+    lives = CREDIT_LIVES; renderLives();
+
+    dino.classList.remove("dino-estrellado");
+    dino.classList.add("dino-corriendo");
+    dinoPosY = Math.max(sueloY, Math.min(deathY, 200));
+    velY = 0;
+    invulnerableUntil = performance.now() + 1000;
+
+    parado = false;
+    const a=bgm(); if(a && a.paused){ playBGM(level,{reset:false}); }
+  }else{
+    updateGOUI();
+  }
+}
+
+// === GO UI helper: habilitar/deshabilitar RESTART según coins ===
+function updateGOUI(){
+  const goVisible = gameOverOverlay && gameOverOverlay.classList.contains('show');
+  const restartBtn = document.getElementById('restartBtn');
+  const insertBtn  = document.getElementById('insertCoinBtn');
+  if(!goVisible || !restartBtn || !insertBtn) return;
+
+  restartBtn.disabled = (credits <= 0);
+  insertBtn.style.display = 'inline-block';
+}
+
+/* ===== VICTORIA ===== */
 function onWin(){ winOverlay.classList.add('show'); parado=true; }
 
+/* ===== RENDER VIDAS ===== */
 function renderLives(){
   livesHud.innerHTML="";
   const frames=['heart-1','heart-2','heart-3'];
@@ -501,78 +823,39 @@ function showLevelBanner(text){
 }
 
 function toLevel2(){
-  level=2;
-  levelSpeedFactor = 1.6;
-  contenedor.classList.add('level-2');
-  contenedor.classList.remove('mediodia','tarde','noche');
-
-  const ufoLayer=document.getElementById('ufoLayer');
-  ufoLayer.style.display='block';
-  const ufoImg = ufoLayer.querySelector('img');
-  if(ufoImg){ ufoImg.src = 'img/ufo2.gif?t=' + Date.now(); }
-
-  stopStorm();
-  resetAll(false);
-  score = 0; textoScore.textContent = "000";
-  gameVel = 1.8 * levelSpeedFactor;
-  showLevelBanner('NIVEL 2');
-
-  // Cambiamos pista y reproducimos (ya desbloqueado por START)
-  playBGM(2,{reset:true});
+  level=2; levelSpeedFactor = 1.6;
+  contenedor.classList.add('level-2'); contenedor.classList.remove('mediodia','tarde','noche');
+  document.getElementById('ufoLayer').style.display='block';
+  const ufoImg = document.querySelector('#ufoLayer img'); if(ufoImg){ ufoImg.src = 'img/ufo2.gif?t=' + Date.now(); }
+  stopStorm(); resetAll(false);
+  score = 0; textoScore.textContent = "000"; gameVel = 1.8 * levelSpeedFactor;
+  showLevelBanner('NIVEL 2'); playBGM(2,{reset:true});
 }
 
 function toLevel3(){
-  level = 3;
-  levelSpeedFactor = 2.0;
-
-  contenedor.classList.add('level-3');
-  contenedor.classList.remove('level-2');
-
+  level = 3; levelSpeedFactor = 2.0;
+  contenedor.classList.add('level-3'); contenedor.classList.remove('level-2');
   document.getElementById('ufoLayer').style.display='none';
-
-  startStorm();
-  resetAll(false);
-  score = 0; textoScore.textContent = "000";
-  gameVel = 2.2 * levelSpeedFactor;
-  showLevelBanner('NIVEL 3');
-
-  playBGM(3,{reset:true});
+  startStorm(); resetAll(false);
+  score = 0; textoScore.textContent = "000"; gameVel = 2.2 * levelSpeedFactor;
+  showLevelBanner('NIVEL 3'); playBGM(3,{reset:true});
 }
 
 /* ===== TORMENTA ===== */
 let lightningTimer=null;
 function startStorm(){
   rainLayer.innerHTML='';
-  const W = contenedor.clientWidth;
-  const dropCount = 120;
+  const W = contenedor.clientWidth, dropCount = 120;
   for(let i=0;i<dropCount;i++){
-    const d = document.createElement('div');
-    d.className='drop';
-    const left = Math.random()*W;
-    const delay = Math.random()*1000;
-    const dur = 800 + Math.random()*900;
-    d.style.left = left+'px';
-    d.style.animationDuration = dur+'ms';
-    d.style.animationDelay = delay+'ms';
+    const d = document.createElement('div'); d.className='drop';
+    const left = Math.random()*W, delay = Math.random()*1000, dur = 800 + Math.random()*900;
+    d.style.left = left+'px'; d.style.animationDuration = dur+'ms'; d.style.animationDelay = delay+'ms';
     rainLayer.appendChild(d);
   }
-  lightningLayer.innerHTML='';
-  clearInterval(lightningTimer);
-  lightningTimer = setInterval(()=>{
-    if(Math.random()<0.35){
-      const f = document.createElement('div');
-      f.className='flash';
-      lightningLayer.appendChild(f);
-      setTimeout(()=>f.remove(), 320);
-    }
-  }, 600);
+  lightningLayer.innerHTML=''; clearInterval(lightningTimer);
+  lightningTimer = setInterval(()=>{ if(Math.random()<0.35){ const f=document.createElement('div'); f.className='flash'; lightningLayer.appendChild(f); setTimeout(()=>f.remove(),320);} }, 600);
 }
-function stopStorm(){
-  rainLayer.innerHTML='';
-  lightningLayer.innerHTML='';
-  clearInterval(lightningTimer);
-  lightningTimer=null;
-}
+function stopStorm(){ rainLayer.innerHTML=''; lightningLayer.innerHTML=''; clearInterval(lightningTimer); lightningTimer=null; }
 
 /* ===== UTIL ===== */
 function isCollision(a,b,padT,padR,padB,padL){
@@ -584,6 +867,9 @@ function isCollision(a,b,padT,padR,padB,padL){
     (ar.left + padL > (br.left + br.width))
   );
 }
+
+/* Mostrar pantalla inicial al cargar */
+showBoot();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
