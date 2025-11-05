@@ -115,6 +115,32 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 .context-text{font:12px 'Press Start 2P', monospace;color:#ddd;text-align:left;line-height:1.7}
 .context-actions{display:flex;gap:12px;justify-content:center;margin-top:14px}
 @media (max-width:760px){ .video-strip{grid-template-columns:1fr} }
+
+/* Panel de contexto ocupando toda la pantalla */
+.context-full{
+  width:100vw; height:100dvh; max-width:none;
+  border-radius:0; padding:16px;
+  display:flex; flex-direction:column; gap:12px;
+}
+
+/* Tira de videos responsiva */
+.video-strip{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.video-strip video{
+  width:100%; height:28vh;               /* alto controlado por viewport */
+  object-fit:cover;                       /* recorta para no deformar */
+  border-radius:8px; border:3px solid #fff; outline:3px solid #000; box-shadow:0 6px 0 #000;
+}
+
+/* Texto con scroll si hace falta */
+.context-text{ flex:1; overflow:auto; }
+
+/* Móviles: un solo video por fila y alturas más cómodas */
+@media (max-width: 768px){
+  .context-full{ padding:12px; gap:10px; }
+  .video-strip{ grid-template-columns:1fr; gap:10px; }
+  .video-strip video{ height:26vh; }
+  .context-text{ max-height:30vh; }
+}
   </style>
 </head>
 <body>
@@ -204,21 +230,21 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
   </div>
 
   <!-- CONTEXTO (única) -->
-  <div class="overlay" id="contextOverlay1" aria-hidden="true">
-    <div class="panel">
-      <div class="context-title">PRÓLOGO</div>
+ <div class="overlay" id="contextOverlay1" aria-hidden="true">
+  <div class="panel context-full">  <!-- <-- ESTA CLASE -->
+    <div class="context-title">PRÓLOGO</div>
 
-      <div class="video-strip">
-        <video muted playsinline loop autoplay preload="metadata">
-          <source src="./video/cargando1.mp4" type="video/mp4">
-        </video>
-        <video muted playsinline loop autoplay preload="metadata">
-          <source src="./video/cargando2.mp4" type="video/mp4">
-        </video>
-        <video muted playsinline loop autoplay preload="metadata">
-          <source src="./video/cargando3.mp4" type="video/mp4">
-        </video>
-      </div>
+    <div class="video-strip">
+      <video class="ctxvid" muted playsinline autoplay loop preload="auto">
+        <source src="./video/cargando1.mp4" type="video/mp4">
+      </video>
+      <video class="ctxvid" muted playsinline autoplay loop preload="auto">
+        <source src="./video/cargando2.mp4" type="video/mp4">
+      </video>
+      <video class="ctxvid" muted playsinline autoplay loop preload="auto">
+        <source src="./video/cargando3.mp4" type="video/mp4">
+      </video>
+    </div>
 
       <div class="context-text">
         En un futuro no muy lejano, los avances tecnologicos han permitido a la humanidad total autonomia sobre su alimentacion.
@@ -866,6 +892,34 @@ function isCollision(a,b,padT,padR,padB,padL){
     ((ar.left + ar.width - padR) < br.left) ||
     (ar.left + padL > (br.left + br.width))
   );
+}
+
+function forceAutoplayVideos(root = document) {
+  const vids = root.querySelectorAll('video.ctxvid');
+  vids.forEach(v => {
+    v.muted = true;
+    v.playsInline = true;
+    // intenta reproducir y vuelve a intentar si falla por política
+    const tryPlay = () => v.play().catch(() => {});
+    tryPlay();
+    v.addEventListener('loadeddata', tryPlay, { once:true });
+  });
+
+  // En móviles: un toque global vuelve a activar
+  const tapResume = () => { vids.forEach(v => v.play().catch(()=>{})); };
+  window.addEventListener('touchstart', tapResume, { passive:true, once:true });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) vids.forEach(v => v.play().catch(()=>{}));
+  });
+}
+
+/* Cuando abrís la pantalla de contexto, forzamos autoplay */
+function showContext1(){
+  document.getElementById('bootOverlay').classList.remove("show");
+  const ctx = document.getElementById('contextOverlay1');
+  ctx.classList.add("show");
+  // aseguro reproducción
+  forceAutoplayVideos(ctx);
 }
 
 /* Mostrar pantalla inicial al cargar */
