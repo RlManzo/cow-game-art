@@ -116,30 +116,74 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 .context-actions{display:flex;gap:12px;justify-content:center;margin-top:14px}
 @media (max-width:760px){ .video-strip{grid-template-columns:1fr} }
 
-/* Panel de contexto ocupando toda la pantalla */
+/* Panel a pantalla completa, seguro en iOS/Android */
 .context-full{
-  width:100vw; height:100dvh; max-width:none;
-  border-radius:0; padding:16px;
-  display:flex; flex-direction:column; gap:12px;
+  width:100vw;
+  height:100svh;                   /* usa el viewport visible en móviles */
+  height:100dvh;                   /* fallback moderno */
+  max-width:none;
+  border-radius:0;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  overflow:hidden;                 /* el scroll va en el body interno */
 }
 
-/* Tira de videos responsiva */
-.video-strip{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+/* Cuerpo que puede scrollear si no alcanza la altura */
+.context-body{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  overflow:auto;                   /* nunca se corta contenido */
+}
+
+/* 3 videos SIEMPRE en una sola fila (como web) */
+.video-strip{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;
+  align-items:stretch;
+}
+
+/* Videos responsivos: mantienen 16:9 y recortan sin deformar */
 .video-strip video{
-  width:100%; height:28vh;               /* alto controlado por viewport */
-  object-fit:cover;                       /* recorta para no deformar */
-  border-radius:8px; border:3px solid #fff; outline:3px solid #000; box-shadow:0 6px 0 #000;
+  width:100%;
+  aspect-ratio:16 / 9;
+  height:auto;                     /* lo maneja aspect-ratio */
+  object-fit:cover;
+  border-radius:8px;
+  border:3px solid #fff;
+  outline:3px solid #000;
+  box-shadow:0 6px 0 #000;
 }
 
 /* Texto con scroll si hace falta */
-.context-text{ flex:1; overflow:auto; }
+.context-text{
+  font:12px 'Press Start 2P', monospace;
+  color:#ddd;
+  line-height:1.7;
+  text-align:left;
+}
 
-/* Móviles: un solo video por fila y alturas más cómodas */
-@media (max-width: 768px){
-  .context-full{ padding:12px; gap:10px; }
-  .video-strip{ grid-template-columns:1fr; gap:10px; }
-  .video-strip video{ height:26vh; }
-  .context-text{ max-height:30vh; }
+/* Botones siempre visibles al borde inferior */
+.context-actions{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  position:sticky;
+  bottom:0;
+  padding-top:8px;
+  /* leve degradé para separar si hay scroll */
+  background: linear-gradient(to top, rgba(18,18,18,.95), rgba(18,18,18,.6) 14%, transparent);
+}
+
+/* Ajustes finos cuando la altura es muy baja (landscape chico) */
+@media (orientation: landscape) and (max-height: 480px){
+  .context-full{ padding:10px; gap:8px; }
+  .video-strip{ gap:8px; }
+  .context-actions{ padding-top:6px; }
 }
   </style>
 </head>
@@ -231,20 +275,24 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
 
   <!-- CONTEXTO (única) -->
  <div class="overlay" id="contextOverlay1" aria-hidden="true">
-  <div class="panel context-full">  <!-- <-- ESTA CLASE -->
+  <div class="panel context-full">
     <div class="context-title">PRÓLOGO</div>
 
-    <div class="video-strip">
-      <video class="ctxvid" muted playsinline autoplay loop preload="auto">
-        <source src="./video/cargando1.mp4" type="video/mp4">
-      </video>
-      <video class="ctxvid" muted playsinline autoplay loop preload="auto">
-        <source src="./video/cargando2.mp4" type="video/mp4">
-      </video>
-      <video class="ctxvid" muted playsinline autoplay loop preload="auto">
-        <source src="./video/cargando3.mp4" type="video/mp4">
-      </video>
-    </div>
+    <!-- NUEVO: cuerpo que puede scrollear -->
+    <div class="context-body">
+      <div class="video-strip">
+        <video class="ctxvid" muted playsinline autoplay loop preload="auto">
+          <source src="./video/cargando1.mp4" type="video/mp4">
+        </video>
+        <video class="ctxvid" muted playsinline autoplay loop preload="auto">
+          <source src="./video/cargando2.mp4" type="video/mp4">
+        </video>
+        <video class="ctxvid" muted playsinline autoplay loop preload="auto">
+          <source src="./video/cargando3.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="context-text">
 
       <div class="context-text">
         En un futuro no muy lejano, los avances tecnologicos han permitido a la humanidad total autonomia sobre su alimentacion.
@@ -254,8 +302,8 @@ body{height:100vh;background:#584040;display:flex;align-items:center;justify-con
       </div>
 
       <div class="context-actions">
-        <a class="retro-btn green" id="ctx1Continue">CONTINUAR</a>
-      </div>
+      <a class="retro-btn green" id="ctx1Continue">CONTINUAR</a>
+    </div>
     </div>
   </div>
 
